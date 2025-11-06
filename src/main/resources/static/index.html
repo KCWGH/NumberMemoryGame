@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>숫자 기억 게임</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="stylesheet" href="style/style.css"> 
+</head>
+<body>
+
+    <div id="theme-toggle" class="top-toggle-btn">
+        <span class="icon sun">☀️</span>
+        <span class="icon moon">🌙</spa n>
+    </div>
+    
+    <div id="leaderboard-toggle-btn" class="top-toggle-btn">
+        🏆
+    </div>
+
+<h1>숫자 기억 게임</h1>
+<div id="mainContent">
+    <div id="gameWrapper">
+        <div id="infoContainer">
+            <div id="stage">스테이지: 1</div>
+            <div id="score">점수: 0</div>
+        </div>
+        <button id="startBtn">게임 시작</button>
+        <div id="blockGridContainer">
+            
+        </div>
+        <div id="timerDisplay">남은 시간: 10.0s</div>
+    </div>
+
+    <div id="leaderboardWrapper">
+        <h2>순위표 🏆</h2>
+        <ol id="leaderboard"></ol>
+    </div>
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
