@@ -1,44 +1,30 @@
 package com.memorygame.model;
 
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Score {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    private int score;
     
-    @Column(nullable = false)
-    private double totalPlayTimeSeconds;
-
-    @Column(nullable = false)
-    private int stagesCompleted;
-
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    // 점수 값
+    private int scoreValue;
+    
+    // 기록 시간
+    private LocalDateTime recordedAt = LocalDateTime.now();
+    
+    // 사용자 (User 엔티티와 일대다 관계 설정)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

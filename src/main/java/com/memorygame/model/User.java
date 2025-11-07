@@ -1,34 +1,24 @@
 package com.memorygame.model;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "users")  // "user" 대신 안전한 이름
-@Getter
-@Setter
+@Table(name = "game_user")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
+    
+    // Google OAuth2에서 제공하는 고유 ID (sub)를 기본 키로 사용
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true, nullable = false)
-    private String googleId;
-
-    private String name;
-
+    private String id;
+    
     private String email;
+    
+    private String name;
 }
-

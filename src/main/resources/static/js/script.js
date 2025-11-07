@@ -254,8 +254,10 @@ function fetchLeaderboard() {
         }
         
         data.forEach(s => {
+            const scoreValue = s.scoreValue; 
+            
             const userName = s.user ? s.user.name : 'Unknown User';
-            const scoreValue = s.score;
+            
             ol.innerHTML += `<li>${userName} <span>${scoreValue} 점</span></li>`;
         });
     })
