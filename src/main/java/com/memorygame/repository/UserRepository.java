@@ -1,9 +1,10 @@
 package com.memorygame.repository;
 
+import com.memorygame.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.memorygame.model.User;
+import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, String> {
-    // ID (sub) 기반으로 User를 찾는 기본 JpaRepository 기능 사용
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByProviderId(String providerId);
 }

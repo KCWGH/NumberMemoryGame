@@ -216,7 +216,8 @@ function submitScore(score) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
-        }
+        },
+		credentials: 'include'
     })
     .then(response => {
         if (response.ok) {
@@ -237,7 +238,9 @@ function submitScore(score) {
 }
 
 function fetchLeaderboard() {
-    fetch('/api/leaderboard')
+    fetch('/api/leaderboard', 	{
+	        credentials: 'include' 
+	    })
     .then(res => {
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -307,7 +310,6 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
         const shuffledDirections = shuffleArray([...directions]);
 
-        let added = false;
         for (const dir of shuffledDirections) {
             const newRow = currentRow + dir.dr;
             const newCol = currentCol + dir.dc;
@@ -318,7 +320,6 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
                 grid[newRow][newCol] = true;
                 blockPositions.push({ row: newRow, col: newCol });
-                added = true;
                 break;
             }
         }
