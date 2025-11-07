@@ -343,10 +343,12 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 fetchLeaderboard();
 
 // =========================================================
-// Service Worker 등록 로직 (파일의 맨 끝에 추가)
+// Service Worker 등록 로직 (PWA 활성화)
 // =========================================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+        // '/service-worker.js'는 Service Worker 파일의 경로입니다.
+        // 이 파일은 웹 루트 (src/main/resources/static/)에 위치해야 합니다.
         navigator.serviceWorker.register('/service-worker.js')
         .then(registration => {
             console.log('Service Worker registered with scope:', registration.scope);
