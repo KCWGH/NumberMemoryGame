@@ -341,3 +341,18 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
 // 초기 리더보드 로드
 fetchLeaderboard();
+
+// =========================================================
+// Service Worker 등록 로직 (파일의 맨 끝에 추가)
+// =========================================================
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch(error => {
+            console.error('Service Worker registration failed:', error);
+        });
+    });
+}
