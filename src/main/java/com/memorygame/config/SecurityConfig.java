@@ -42,7 +42,7 @@ public class SecurityConfig {
                 // 리더보드는 로그인 없이 접근 가능
                 .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
                 // 정적 파일과 루트 페이지 접근 허용
-                .requestMatchers("/", "/style/**", "/js/**").permitAll()
+                .requestMatchers("/", "/style/**", "/js/**", "/manifest.json", "/icons/**", "/service-worker.js").permitAll()
                 // 점수 제출은 인증된 사용자만 가능
                 .requestMatchers(HttpMethod.POST, "/api/score").authenticated()
                 .anyRequest().authenticated()
