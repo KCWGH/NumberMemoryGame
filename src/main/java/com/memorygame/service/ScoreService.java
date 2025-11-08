@@ -1,5 +1,6 @@
 package com.memorygame.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -21,9 +22,20 @@ public class ScoreService {
 
     @Transactional
     public void saveScore(User user, int scoreValue) {
-        if (user != null && scoreValue > 0) { 
+        if (user != null && scoreValue > 0) {
+            // 최근 10초 이내 동일 사용자의 동일한 점수가 있는지 확인
+            boolean isDuplicate = scoreRepository.existsByUserAndScoreValueAndPlayedAtGreaterThan(
+                user,
+                scoreValue,
+                LocalDateTime.now().minusSeconds(10)
+            );
+            
+            if (isDuplicate) {
+                throw new IllegalStateException("동일한 점수가 10초 이내에 이미 제출되었습니다");
+            }
+            
             Score score = Score.builder()
-                .user(user) // 영속 상태의 user 객체
+                .user(user)
                 .scoreValue(scoreValue)
                 .build();
             scoreRepository.save(score);

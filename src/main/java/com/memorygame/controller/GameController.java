@@ -31,27 +31,30 @@ public class GameController {
 	// 점수 제출 엔드포인트 (POST /api/score?score=123)
 	// 인증된 사용자만 접근 가능 (SecurityConfig에서 설정)
 	@PostMapping("/score")
-	public ResponseEntity<?> submitScore(@RequestParam int score, @AuthenticationPrincipal OAuth2User oauth2User) {
+    public ResponseEntity<?> submitScore(@RequestParam int score, @AuthenticationPrincipal OAuth2User oauth2User) {
+        if (oauth2User == null) {
+            return new ResponseEntity<>("Please log in first.", HttpStatus.UNAUTHORIZED);
+        }
 
-		if (oauth2User == null) {
-			return new ResponseEntity<>("Please log in first.", HttpStatus.UNAUTHORIZED); // 401
-		}
+        if (score <= 0) {
+            return ResponseEntity.badRequest().body("Score must be greater than 0.");
+        }
 
-		if (score <= 0) {
-			return ResponseEntity.badRequest().body("Score must be greater than 0.");
-		}
-
-		// 3. OAuth2 ID(providerId)를 사용하여 DB에서 실제 User 엔티티 조회
-		String providerId = oauth2User.getName(); // Google sub ID
-
-		User user = userRepository.findByProviderId(providerId)
-				.orElseThrow(() -> new IllegalStateException("Authenticated user not found in DB."));
-
-		// 4. 영속 User 엔티티를 Service에 전달
-		scoreService.saveScore(user, score);
-
-		return ResponseEntity.ok("Score submitted successfully.");
-	}
+        try {
+            String providerId = oauth2User.getName();
+            User user = userRepository.findByProviderId(providerId)
+                    .orElseThrow(() -> new IllegalStateException("Authenticated user not found in DB."));
+            
+            scoreService.saveScore(user, score);
+            return ResponseEntity.ok("Score submitted successfully.");
+            
+        } catch (IllegalStateException e) {
+            // 중복 점수 제출이나 기타 예외 처리
+            return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(e.getMessage());
+        }
+    }
 
 	// 리더보드 조회 엔드포인트 (GET /api/leaderboard)
 	@GetMapping("/leaderboard")

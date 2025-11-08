@@ -217,7 +217,7 @@ function submitScore(score) {
         headers: {
             'Content-Type': 'application/json'
         },
-		credentials: 'include'
+        credentials: 'include'
     })
     .then(response => {
         if (response.ok) {
@@ -225,15 +225,19 @@ function submitScore(score) {
             return fetchLeaderboard();
         } else if (response.status === 401) {
             alert('Score submission failed: Please log in with Google first.');
+        } else if (response.status === 429) {
+            // 429 상태 코드는 콘솔에만 로깅하고 리더보드 갱신
+            console.log('Duplicate score submission detected.');
+            return fetchLeaderboard();
         } else {
-             console.error('Score submission failed with status:', response.status);
-             fetchLeaderboard(); 
+            console.error('Score submission failed with status:', response.status);
+            return fetchLeaderboard();
         }
     })
     .catch(err => {
         console.error('Score submission network error:', err);
         alert('Network error during score submission.');
-        fetchLeaderboard(); 
+        fetchLeaderboard();
     });
 }
 
