@@ -8,7 +8,12 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "game_score")
+@Table(
+    name = "game_score",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "score_value"})
+    }
+)
 public class Score {
 
     @Id
