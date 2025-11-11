@@ -15,6 +15,16 @@ const leaderboardToggleBtn = document.getElementById('leaderboard-toggle-btn');
 const isMobile = window.matchMedia('(max-width: 899px)').matches;
 
 // =========================================================
+// ✨ 모달 관련 DOM 요소 추가
+// =========================================================
+const themeColorMeta = document.getElementById('theme-color-meta');
+const modalOverlay = document.getElementById('modalOverlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalMessage = document.getElementById('modalMessage');
+const modalConfirmBtn = document.getElementById('modalConfirmBtn');
+const closeBtn = document.querySelector('.close-btn'); // 모달 닫기 버튼 (X)
+
+// =========================================================
 // 모바일/PC 레이아웃 초기 설정 및 리더보드 토글
 // =========================================================
 
@@ -30,6 +40,40 @@ if (isMobile) {
     leaderboardWrapper.classList.add('is-visible'); 
 }
 
+// =========================================================
+// 테마 토글 로직
+// =========================================================
+function applyTheme(theme) {
+    document.body.classList.toggle('dark-mode', theme === 'dark');
+    localStorage.setItem('theme', theme);
+
+    // ✨ PWA 테마 색상 변경 로직 추가 ✨
+    let themeColor;
+    if (theme === 'dark') {
+        // 다크 모드 배경색: --bg-color (#1a202c)
+        themeColor = '#1a202c'; 
+    } else {
+        // 라이트 모드 배경색: --bg-color (#f0f4f8)
+        themeColor = '#f0f4f8';
+    }
+
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', themeColor);
+    }
+}
+
+if (localStorage.getItem('theme')) {
+    applyTheme(localStorage.getItem('theme'));
+} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    applyTheme('dark');
+} else {
+    applyTheme('light');
+}
+
+themeToggle.onclick = () => {
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+};
 
 // =========================================================
 // 테마 토글 로직
@@ -37,6 +81,17 @@ if (isMobile) {
 function applyTheme(theme) {
     document.body.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
+
+    let themeColor;
+    if (theme === 'dark') {
+        themeColor = '#1a202c'; 
+    } else {
+        themeColor = '#f0f4f8';
+    }
+
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', themeColor);
+    }
 }
 
 const savedTheme = localStorage.getItem('theme');
@@ -52,6 +107,37 @@ themeToggle.onclick = () => {
     const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 };
+
+// =========================================================
+// ✨ 모달 제어 함수 추가
+// =========================================================
+function showModal(title, message, callback) {
+    modalTitle.innerText = title;
+    modalMessage.innerText = message;
+    
+    // '확인' 버튼 클릭 시
+    modalConfirmBtn.onclick = () => {
+        modalOverlay.classList.remove('show');
+        if (callback) callback();
+    };
+
+    // 'X' 버튼 클릭 시
+    closeBtn.onclick = () => {
+        modalOverlay.classList.remove('show');
+        if (callback) callback(); 
+    };
+    
+    // 오버레이 배경 클릭 시 닫기
+    modalOverlay.onclick = (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.classList.remove('show');
+            if (callback) callback();
+        }
+    };
+    
+    modalOverlay.classList.add('show');
+}
+
 
 // =========================================================
 // 이하 게임 및 서버 통신 로직
@@ -194,13 +280,12 @@ function endGame() {
         } else {
             fetchLeaderboard();
         }
-
-        alert(`Game Over! Total Score: ${totalScore}`);
+        
         totalScore = 0;
         stageEl.innerText = `스테이지: 1`;
         scoreEl.innerText = `점수: 0`;
         timerEl.innerText = `남은 시간: 10.0s`;
-        startBtn.style.display = 'block'; // Start 버튼 다시 표시
+        startBtn.style.display = 'block';
         blockGridContainer.innerHTML = '';
         
         if (isMobile) {
@@ -222,22 +307,21 @@ function submitScore(score) {
     .then(response => {
         if (response.ok) {
             console.log('Score submitted successfully.');
-            return fetchLeaderboard();
+            showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
         } else if (response.status === 401) {
-            alert('Score submission failed: Please log in with Google first.');
-        } else if (response.status === 429) {
-            // 429 상태 코드는 콘솔에만 로깅하고 리더보드 갱신
-            console.log('Duplicate score submission detected.');
-            return fetchLeaderboard();
+            // 401: 인증 필요
+            showModal('점수 기록 실패', '점수를 기록하려면 먼저 Google로 로그인해야 합니다.', fetchLeaderboard);
+        } else if (response.status === 409 || response.status === 429 || response.status === 500) {
+            console.log('Duplicate score submission detected or server error.');
+            showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, fetchLeaderboard);
         } else {
             console.error('Score submission failed with status:', response.status);
-            return fetchLeaderboard();
+            showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, fetchLeaderboard);
         }
     })
     .catch(err => {
         console.error('Score submission network error:', err);
-        alert('Network error during score submission.');
-        fetchLeaderboard();
+        showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', fetchLeaderboard);
     });
 }
 
@@ -263,7 +347,7 @@ function fetchLeaderboard() {
         data.forEach(s => {
             const scoreValue = s.scoreValue; 
             
-            const userName = s.user ? s.user.name : 'Unknown User';
+            const userName = s.user ? s.user : 'Unknown User';
             
             ol.innerHTML += `<li>${userName} <span>${scoreValue} 점</span></li>`;
         });

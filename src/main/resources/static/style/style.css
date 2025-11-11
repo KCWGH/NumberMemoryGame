@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Pretendard Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('../fonts/PretendardVariable.woff2') format('woff2-variations');
+}
+
 /* ---------------------------------------------------- */
 /* 1. CSS 변수 및 다크 모드 설정 */
 /* ---------------------------------------------------- */
@@ -361,3 +369,87 @@ body.dark-mode #theme-toggle .icon.moon { opacity: 1; color: var(--text-color); 
 #leaderboard li:nth-child(3) { color: var(--leaderboard-bronze); font-weight: bold; }
 #leaderboard li:nth-child(3) span { color: var(--leaderboard-bronze); }
 #leaderboard li:nth-child(3)::before { color: var(--leaderboard-bronze); }
+
+
+/* ---------------------------------------------------- */
+/* 5.5. 모달 관련 스타일 추가 */
+/* ---------------------------------------------------- */
+
+.modal-overlay {
+    display: none; 
+    position: fixed;
+    z-index: 1000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6); 
+    backdrop-filter: blur(3px);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-overlay.show {
+    display: flex; 
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow); 
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    position: relative;
+    transition: transform 0.3s ease-out;
+}
+
+.close-btn {
+    color: var(--text-color); 
+    opacity: 0.6;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.close-btn:hover {
+    opacity: 1;
+}
+
+#modalTitle {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+#modalMessage {
+    font-size: 1.1em;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+#modalConfirmBtn {
+    background: var(--button-bg); 
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background 0.2s, transform 0.1s;
+}
+
+#modalConfirmBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}

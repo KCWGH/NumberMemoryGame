@@ -1,7 +1,6 @@
 package com.memorygame.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.memorygame.dto.ScoreResponseDto;
 import com.memorygame.model.User;
 import com.memorygame.repository.UserRepository;
 import com.memorygame.service.ScoreService;
@@ -51,24 +51,16 @@ public class GameController {
         } catch (IllegalStateException e) {
             // 중복 점수 제출이나 기타 예외 처리
             return ResponseEntity
-                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .status(HttpStatus.CONFLICT)
                 .body(e.getMessage());
         }
     }
 
 	// 리더보드 조회 엔드포인트 (GET /api/leaderboard)
 	@GetMapping("/leaderboard")
-	public ResponseEntity<List<Map<String, Object>>> getLeaderboard() {
-		List<ScoreService.ScoreResponseDto> scores = scoreService.getLeaderboard();
-
-		// 프론트엔드의 기대 응답 형식: [{ user: { name: "...", ... }, scoreValue: 123 }, ...]
-		// 여기서는 ScoreResponseDto를 List<Map<String, Object>> 형태로 변환하여 JSON 응답
-		List<Map<String, Object>> response = scores.stream().map(dto -> {
-			return Map.of("scoreValue", dto.getScoreValue(),
-					// 'user' 객체 안에 'name'을 넣는 프론트엔드의 응답 구조에 맞추기 위해 사용
-					"user", Map.of("name", dto.getName()));
-		}).toList();
-
-		return ResponseEntity.ok(response);
+    public ResponseEntity<List<ScoreResponseDto>> getLeaderboard() {
+        List<ScoreResponseDto> scores = scoreService.getLeaderboard();
+        
+        return ResponseEntity.ok(scores);
 	}
 }

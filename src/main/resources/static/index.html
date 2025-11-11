@@ -4,16 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>숫자 기억 게임</title>
+<meta name="theme-color" content="#f0f4f8" id="theme-color-meta">
 <link rel="icon" href="/icons/favicon.ico" type="image/x-icon">
 <link rel="manifest" href="/manifest.json">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="stylesheet" href="style/style.css"> 
 </head>
 <body>
 
     <div id="theme-toggle" class="top-toggle-btn">
         <span class="icon sun">☀️</span>
-        <span class="icon moon">🌙</spa n>
+        <span class="icon moon">🌙</span>
     </div>
     
     <div id="leaderboard-toggle-btn" class="top-toggle-btn">
@@ -40,6 +40,14 @@
     </div>
 </div>
 
+<div id="modalOverlay" class="modal-overlay">
+    <div id="scoreModal" class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2 id="modalTitle"></h2>
+        <p id="modalMessage"></p>
+        <button id="modalConfirmBtn">확인</button>
+    </div>
+</div>
 <script src="js/script.js"></script>
 
 </body>

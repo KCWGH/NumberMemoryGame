@@ -1,0 +1,11 @@
+package com.memorygame.dto;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class ScoreResponseDto {
+    private final int scoreValue;
+    private final String user; 
+}
