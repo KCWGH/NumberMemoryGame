@@ -1,6 +1,7 @@
 let currentStage = 1;
 let numbersToFind, nextNumberToClick, timeLeft, gameInterval, totalScore = 0;
 let isGameActive = false;
+let mobileLayout = false;
 
 const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
@@ -11,84 +12,70 @@ const blockGridContainer = document.getElementById('blockGridContainer');
 const leaderboardWrapper = document.getElementById('leaderboardWrapper');
 const themeToggle = document.getElementById('theme-toggle');
 const leaderboardToggleBtn = document.getElementById('leaderboard-toggle-btn');
-
-const isMobile = window.matchMedia('(max-width: 899px)').matches;
-
-// =========================================================
-// ✨ 모달 관련 DOM 요소 추가
-// =========================================================
 const themeColorMeta = document.getElementById('theme-color-meta');
 const modalOverlay = document.getElementById('modalOverlay');
 const modalTitle = document.getElementById('modalTitle');
 const modalMessage = document.getElementById('modalMessage');
 const modalConfirmBtn = document.getElementById('modalConfirmBtn');
-const closeBtn = document.querySelector('.close-btn'); // 모달 닫기 버튼 (X)
+const closeBtn = document.querySelector('.close-btn');
+const mainContent = document.getElementById('mainContent');
+const restartBtn = document.getElementById('restartBtn');
 
-// =========================================================
-// 모바일/PC 레이아웃 초기 설정 및 리더보드 토글
-// =========================================================
+function checkLayoutMode() {
+    mobileLayout = window.innerWidth < 900;
+    mainContent.classList.toggle('mobile-layout', mobileLayout);
 
-if (isMobile) {
-    leaderboardToggleBtn.style.display = 'flex'; 
-
-    leaderboardToggleBtn.onclick = () => {
-        leaderboardWrapper.classList.toggle('is-visible');
+    if (mobileLayout) {
+        leaderboardToggleBtn.style.display = 'flex';
+        if (leaderboardWrapper.classList.contains('is-visible') && !isGameActive) {
+            restartBtn.style.display = 'block';
+        } else {
+            restartBtn.style.display = 'none';
+        }
         leaderboardToggleBtn.innerText = leaderboardWrapper.classList.contains('is-visible') ? '❌' : '🏆';
-    };
-} else {
-    leaderboardToggleBtn.style.display = 'none';
-    leaderboardWrapper.classList.add('is-visible'); 
-}
-
-// =========================================================
-// 테마 토글 로직
-// =========================================================
-function applyTheme(theme) {
-    document.body.classList.toggle('dark-mode', theme === 'dark');
-    localStorage.setItem('theme', theme);
-
-    // ✨ PWA 테마 색상 변경 로직 추가 ✨
-    let themeColor;
-    if (theme === 'dark') {
-        // 다크 모드 배경색: --bg-color (#1a202c)
-        themeColor = '#1a202c'; 
     } else {
-        // 라이트 모드 배경색: --bg-color (#f0f4f8)
-        themeColor = '#f0f4f8';
-    }
-
-    if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', themeColor);
+        leaderboardToggleBtn.style.display = 'none';
+        leaderboardWrapper.classList.add('is-visible');
+        restartBtn.style.display = 'none';
+        gameWrapper.style.display = 'flex';
+        leaderboardWrapper.style.display = 'block';
     }
 }
 
-if (localStorage.getItem('theme')) {
-    applyTheme(localStorage.getItem('theme'));
-} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    applyTheme('dark');
-} else {
-    applyTheme('light');
-}
+leaderboardToggleBtn.onclick = () => {
+    if (!mobileLayout) return;
 
-themeToggle.onclick = () => {
-    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
-    applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+    const isVisible = leaderboardWrapper.classList.toggle('is-visible');
+    leaderboardToggleBtn.innerText = isVisible ? '❌' : '🏆';
+    
+    gameWrapper.style.display = isVisible ? 'none' : 'flex'; 
+    leaderboardWrapper.style.display = isVisible ? 'block' : 'none';
+    
+    restartBtn.style.display = (isVisible && !isGameActive) ? 'block' : 'none';
 };
 
-// =========================================================
-// 테마 토글 로직
-// =========================================================
+if (restartBtn) {
+    restartBtn.onclick = () => {
+        if (mobileLayout) {
+            leaderboardWrapper.classList.remove('is-visible');
+            gameWrapper.style.display = 'flex';
+            leaderboardToggleBtn.innerText = '🏆';
+            restartBtn.style.display = 'none';
+            if (!isGameActive) {
+                startBtn.style.display = 'block';
+            }
+        }
+    };
+}
+
+window.addEventListener('resize', checkLayoutMode);
+document.addEventListener('DOMContentLoaded', checkLayoutMode);
+
 function applyTheme(theme) {
     document.body.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
 
-    let themeColor;
-    if (theme === 'dark') {
-        themeColor = '#1a202c'; 
-    } else {
-        themeColor = '#f0f4f8';
-    }
-
+    const themeColor = theme === 'dark' ? '#1a202c' : '#f0f4f8';
     if (themeColorMeta) {
         themeColorMeta.setAttribute('content', themeColor);
     }
@@ -108,49 +95,39 @@ themeToggle.onclick = () => {
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 };
 
-// =========================================================
-// ✨ 모달 제어 함수 추가
-// =========================================================
 function showModal(title, message, callback) {
     modalTitle.innerText = title;
     modalMessage.innerText = message;
     
-    // '확인' 버튼 클릭 시
     modalConfirmBtn.onclick = () => {
         modalOverlay.classList.remove('show');
         if (callback) callback();
     };
 
-    // 'X' 버튼 클릭 시
-    closeBtn.onclick = () => {
-        modalOverlay.classList.remove('show');
-        if (callback) callback(); 
-    };
-    
-    // 오버레이 배경 클릭 시 닫기
-    modalOverlay.onclick = (e) => {
-        if (e.target === modalOverlay) {
+    const closeModalOnly = (e) => {
+        if (e.target === modalOverlay || e.currentTarget === closeBtn) {
             modalOverlay.classList.remove('show');
-            if (callback) callback();
+            modalOverlay.removeEventListener('click', closeModalOnly);
+            closeBtn.onclick = null;
         }
     };
+
+    closeBtn.onclick = closeModalOnly;
+    modalOverlay.onclick = closeModalOnly;
     
     modalOverlay.classList.add('show');
 }
 
-
-// =========================================================
-// 이하 게임 및 서버 통신 로직
-// =========================================================
-
 startBtn.onclick = () => {
     if (!isGameActive) {
-        // Start 버튼은 게임 시작 시 자동으로 숨겨집니다.
         startBtn.style.display = 'none'; 
         startStage(1);
-        if (isMobile) {
-            leaderboardWrapper.classList.remove('is-visible'); 
+        
+        if (mobileLayout) {
+            leaderboardWrapper.classList.remove('is-visible');
+            gameWrapper.style.display = 'flex';
             leaderboardToggleBtn.innerText = '🏆';
+            restartBtn.style.display = 'none';
         }
     }
 };
@@ -173,24 +150,26 @@ function startStage(stage) {
     const wrapperWidth = gameWrapper.clientWidth; 
     
     const infoContainerHeight = document.getElementById('infoContainer').offsetHeight;
-    const timerDisplayHeight = timerEl.offsetHeight + 30; // 타이머 높이 + 하단 여백
+    const timerDisplayHeight = timerEl.offsetHeight + 30;
 
-    // 블록 그리드가 사용 가능한 높이는 infoContainer와 timerDisplay 공간을 제외한 영역입니다.
-    const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight; 
+    const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20; 
     const availableWidth = wrapperWidth - 40; 
     
-    // 블록 크기 계산 (셀 60px + 간격 5px)
-    const cellSize = 60 + 5;
+    const cellSize = 65; 
     const maxCols = Math.floor(availableWidth / cellSize);
     const maxRows = Math.floor(availableHeight / cellSize);
 
-    let gridLayout = generateConnectedBlock(numToRemember, maxRows, maxCols);
+    const actualMaxCols = Math.max(1, maxCols);
+    const actualMaxRows = Math.max(1, maxRows);
+
+    let gridLayout = generateConnectedBlock(numToRemember, actualMaxRows, actualMaxCols);
 
     if (!gridLayout) { 
         const numBlocks = numToRemember;
-        let cols = Math.min(numBlocks, maxCols);
+        let cols = Math.min(numBlocks, actualMaxCols);
         let rows = Math.ceil(numBlocks / cols);
-        while(rows > maxRows && cols > 1) { 
+        
+        while(rows > actualMaxRows && cols > 1) { 
             cols--;
             rows = Math.ceil(numBlocks / cols);
         }
@@ -282,16 +261,22 @@ function endGame() {
         }
         
         totalScore = 0;
+        currentStage = 1;
         stageEl.innerText = `스테이지: 1`;
         scoreEl.innerText = `점수: 0`;
         timerEl.innerText = `남은 시간: 10.0s`;
-        startBtn.style.display = 'block';
+        
         blockGridContainer.innerHTML = '';
         
-        if (isMobile) {
+        if (mobileLayout) {
+            gameWrapper.style.display = 'none';
             leaderboardWrapper.classList.add('is-visible');
+            leaderboardWrapper.style.display = 'block';
             leaderboardToggleBtn.innerText = '❌';
+            restartBtn.style.display = 'block';
             leaderboardWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            startBtn.style.display = 'block';
         }
     }, 500);
 }
@@ -309,7 +294,6 @@ function submitScore(score) {
             console.log('Score submitted successfully.');
             showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
         } else if (response.status === 401) {
-            // 401: 인증 필요
             showModal('점수 기록 실패', '점수를 기록하려면 먼저 Google로 로그인해야 합니다.', fetchLeaderboard);
         } else if (response.status === 409 || response.status === 429 || response.status === 500) {
             console.log('Duplicate score submission detected or server error.');
@@ -326,9 +310,9 @@ function submitScore(score) {
 }
 
 function fetchLeaderboard() {
-    fetch('/api/leaderboard', 	{
-	        credentials: 'include' 
-	    })
+    fetch('/api/leaderboard',   {
+        credentials: 'include' 
+    })
     .then(res => {
         if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -346,9 +330,7 @@ function fetchLeaderboard() {
         
         data.forEach(s => {
             const scoreValue = s.scoreValue; 
-            
             const userName = s.user ? s.user : 'Unknown User';
-            
             ol.innerHTML += `<li>${userName} <span>${scoreValue} 점</span></li>`;
         });
     })
@@ -427,16 +409,10 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 }
 
 
-// 초기 리더보드 로드
 fetchLeaderboard();
 
-// =========================================================
-// Service Worker 등록 로직 (PWA 활성화)
-// =========================================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        // '/service-worker.js'는 Service Worker 파일의 경로입니다.
-        // 이 파일은 웹 루트 (src/main/resources/static/)에 위치해야 합니다.
         navigator.serviceWorker.register('/service-worker.js')
         .then(registration => {
             console.log('Service Worker registered with scope:', registration.scope);
