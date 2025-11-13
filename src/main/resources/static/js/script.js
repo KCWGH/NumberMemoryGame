@@ -58,12 +58,12 @@ if (restartBtn) {
     restartBtn.onclick = () => {
         if (mobileLayout) {
             leaderboardWrapper.classList.remove('is-visible');
+            leaderboardWrapper.style.display = 'none';
             gameWrapper.style.display = 'flex';
             leaderboardToggleBtn.innerText = '🏆';
             restartBtn.style.display = 'none';
-            if (!isGameActive) {
-                startBtn.style.display = 'block';
-            }
+            startBtn.style.display = 'block';
+            gameWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
 }
@@ -274,6 +274,7 @@ function endGame() {
             leaderboardWrapper.style.display = 'block';
             leaderboardToggleBtn.innerText = '❌';
             restartBtn.style.display = 'block';
+            startBtn.style.display = 'block';
             leaderboardWrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
             startBtn.style.display = 'block';
