@@ -396,7 +396,7 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     padding-left: 35px; 
 }
 #leaderboard li:last-child { border-bottom: none; }
-#leaderboard li span { font-weight: 700; color: var(--text-color); } /* 이 스타일은 .leaderboard-score로 대체되지만, 혹시 다른 span이 있다면 남아있을 수 있음 */
+#leaderboard li span { font-weight: 700; color: var(--text-color); } 
 #leaderboard li::before { 
     counter-increment: leaderboard-counter; 
     content: counter(leaderboard-counter) "."; 
@@ -417,16 +417,14 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 #leaderboard li:nth-child(3) span { color: var(--leaderboard-bronze); }
 #leaderboard li:nth-child(3)::before { color: var(--leaderboard-bronze); }
 
-/* 이름만 담는 Wrapper (왼쪽 정렬) */
 .user-info-wrapper {
     display: flex;       
     align-items: center; 
     flex-grow: 1; 
     min-width: 0; 
-    margin-right: 10px; /* 이름과 오른쪽 그룹 사이 간격 */
+    margin-right: 10px; 
 }
 
-/* 🏆 점수와 아이콘을 묶는 Wrapper (오른쪽 정렬) */
 .score-provider-wrapper {
     display: flex;
     align-items: center;
@@ -436,11 +434,10 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 .leaderboard-provider-icon {
     width: 16px; 
     height: 16px;
-    margin-right: 3px; /* 아이콘과 점수 사이 간격 */
+    margin-right: 3px; 
     flex-shrink: 0; 
 }
 
-/* 🏆 점수 텍스트에 고정 폭 적용 */
 .leaderboard-score {
     font-weight: 700; 
     color: var(--text-color);
@@ -536,6 +533,11 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     margin-bottom: 10px;
 }
 
+#modalButtonWrapper {
+    text-align: center;
+    padding: 0 20px;
+}
+
 #modalConfirmBtn {
     background: var(--button-bg); 
     color: white;
@@ -548,6 +550,11 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     font-weight: 600;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background 0.2s, transform 0.1s;
+    
+    width: 100%;             
+    max-width: 250px;        
+    display: inline-block;   
+    margin: 20px auto 0 auto;
 }
 
 #modalConfirmBtn:hover {

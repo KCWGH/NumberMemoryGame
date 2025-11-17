@@ -6,6 +6,11 @@ let mobileLayout = false;
 let isAuthenticated = false;
 let userProfile = null; 
 
+let audioContext;
+let currentFrequency;
+const BASE_FREQUENCY = 440;
+const PITCH_STEP = 1.059463;
+
 const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
 const timerEl = document.getElementById('timerDisplay'); 
@@ -35,6 +40,42 @@ const SOCIAL_LOGIN_URLS = {
     logout: 'https://numbermemorygame.onrender.com/api/logout', 
     user: 'https://numbermemorygame.onrender.com/api/user' 
 };
+
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        currentFrequency = BASE_FREQUENCY;
+    }
+}
+
+function playSuccessSound() {
+    initAudioContext();
+    
+    const stepIndex = nextNumberToClick - 1;
+    
+    currentFrequency = BASE_FREQUENCY * Math.pow(PITCH_STEP, stepIndex);
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
+
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.start();
+    
+    const attackTime = 0.01;
+    const decayTime = 0.15;
+    
+    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + attackTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + attackTime + decayTime);
+    
+    oscillator.stop(audioContext.currentTime + attackTime + decayTime + 0.05);
+}
 
 function adjustGameWrapperHeight() {
     if (window.innerWidth >= 900) {
@@ -185,7 +226,7 @@ function resetModalToScoreMode() {
         loginModalContent.style.display = 'none';
     }
     modalMessage.style.display = 'block';
-    modalConfirmBtn.style.display = 'block';
+    modalConfirmBtn.parentElement.style.display = 'block';
 }
 
 function showModal(title, message, callback) {
@@ -217,7 +258,7 @@ function showLoginModal() {
     modalTitle.innerText = "소셜 로그인";
     modalMessage.innerText = "계정을 연결하여\n점수를 기록하세요.";
     modalMessage.style.display = 'block';
-    modalConfirmBtn.style.display = 'none';
+    modalConfirmBtn.parentElement.style.display = 'none';
     
     if (loginModalContent) {
         loginModalContent.style.display = 'block';
@@ -337,6 +378,8 @@ function handleLogout() {
 
 startBtn.onclick = () => {
     if (!isGameActive) {
+        initAudioContext();
+        
         startBtn.style.display = 'none'; 
         startStage(1);
         
@@ -441,6 +484,8 @@ function handleClick(cell) {
 
     const num = parseInt(cell.dataset.number);
     if (num === nextNumberToClick) {
+        playSuccessSound();
+        
         cell.classList.add('correct');
         cell.innerText = num;
         nextNumberToClick++;
