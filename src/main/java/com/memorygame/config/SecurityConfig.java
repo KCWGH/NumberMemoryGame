@@ -31,6 +31,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 리더보드 및 정적 리소스는 인증 없이 접근 가능
                 .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
+                // 로그인 상태 확인 엔드포인트는 인증 없이 접근 가능하도록 허용
+                .requestMatchers(HttpMethod.GET, "/api/user").permitAll() 
                 .requestMatchers("/index.html", "/style/**", "/js/**", "/manifest.json", "/icons/**", "/service-worker.js").permitAll()
                 // 점수 제출은 인증된 사용자만 가능
                 .requestMatchers(HttpMethod.POST, "/api/score").authenticated()
@@ -43,6 +45,7 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/", true)
             )
             .logout(logout -> logout
+                .logoutUrl("/api/logout") 
                 .logoutSuccessUrl("/")
                 .permitAll()
             );
@@ -55,7 +58,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Collections.singletonList("https://numbermemorygame.onrender.com"));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(true); 
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

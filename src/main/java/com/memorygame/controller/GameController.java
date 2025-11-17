@@ -1,6 +1,8 @@
 package com.memorygame.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,41 @@ public class GameController {
 	private final ScoreService scoreService;
 	private final UserRepository userRepository;
 
+    @GetMapping("/user")
+    public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal OAuth2User oauth2User) {
+        if (oauth2User == null) {
+            return new ResponseEntity<>("Not Authenticated", HttpStatus.UNAUTHORIZED);
+        }
+        
+        Map<String, Object> userInfo = new HashMap<>();
+        
+        try {
+            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            String registrationId = authentication.getAuthorizedClientRegistrationId();
+            ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
+            String providerId = oauth2User.getName();
+            
+            User user = userRepository.findByProviderAndProviderId(providerType, providerId)
+                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
+                
+            userInfo.put("name", user.getName());
+            userInfo.put("email", user.getEmail());
+            
+        } catch (Exception e) {
+            String name = oauth2User.getAttribute("name");
+            String email = oauth2User.getAttribute("email");
+            
+            userInfo.put("name", name != null ? name : email);
+            userInfo.put("email", email);
+            
+            if (userInfo.get("name") == null && userInfo.get("email") == null) {
+                userInfo.put("name", "인증된 사용자");
+            }
+        }
+        
+        return ResponseEntity.ok(userInfo);
+    }
+
 	@PostMapping("/score")
     public ResponseEntity<?> submitScore(@RequestParam int score, @AuthenticationPrincipal OAuth2User oauth2User) {
         if (oauth2User == null) {
@@ -43,12 +80,10 @@ public class GameController {
         String providerId = oauth2User.getName();
         
         try {
-            // Security Context에서 ProviderType 추출
             OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
             String registrationId = authentication.getAuthorizedClientRegistrationId();
             ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
             
-            // ProviderType과 ProviderId를 사용해 DB에서 User 조회
             User user = userRepository.findByProviderAndProviderId(providerType, providerId)
                     .orElseThrow(() -> new IllegalStateException("인증된 사용자를 DB에서 찾을 수 없습니다."));
             
@@ -69,7 +104,6 @@ public class GameController {
 	@GetMapping("/leaderboard")
     public ResponseEntity<List<ScoreResponseDto>> getLeaderboard() {
         List<ScoreResponseDto> scores = scoreService.getLeaderboard();
-        
         return ResponseEntity.ok(scores);
 	}
 }
