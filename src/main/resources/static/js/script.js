@@ -29,11 +29,11 @@ const loginModalContent = document.getElementById('loginModalContent');
 const socialLoginContainer = document.getElementById('socialLoginContainer');
 
 const SOCIAL_LOGIN_URLS = {
-    google: 'http://numbermemorygame.onrender.com/oauth2/authorization/google', 
-    kakao: 'http://numbermemorygame.onrender.com/oauth2/authorization/kakao',  
-    naver: 'http://numbermemorygame.onrender.com/oauth2/authorization/naver',   
-    logout: 'http://numbermemorygame.onrender.com/api/logout', 
-    user: 'http://numbermemorygame.onrender.com/api/user' 
+    google: 'https://numbermemorygame.onrender.com/oauth2/authorization/google', 
+    kakao: 'https://numbermemorygame.onrender.com/oauth2/authorization/kakao',  
+    naver: 'https://numbermemorygame.onrender.com/oauth2/authorization/naver',   
+    logout: 'https://numbermemorygame.onrender.com/api/logout', 
+    user: 'https://numbermemorygame.onrender.com/api/user' 
 };
 
 function adjustGameWrapperHeight() {
