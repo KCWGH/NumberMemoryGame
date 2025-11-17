@@ -3,6 +3,9 @@ let numbersToFind, nextNumberToClick, timeLeft, gameInterval, totalScore = 0;
 let isGameActive = false;
 let mobileLayout = false;
 
+let isAuthenticated = false;
+let userProfile = null; 
+
 const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
 const timerEl = document.getElementById('timerDisplay'); 
@@ -21,11 +24,93 @@ const closeBtn = document.querySelector('.close-btn');
 const mainContent = document.getElementById('mainContent');
 const restartBtn = document.getElementById('restartBtn');
 
+const userStatusContainer = document.getElementById('userStatusContainer');
+const loginModalContent = document.getElementById('loginModalContent'); 
+const socialLoginContainer = document.getElementById('socialLoginContainer');
+
+const SOCIAL_LOGIN_URLS = {
+    google: 'http://numbermemorygame.onrender.com/oauth2/authorization/google', 
+    kakao: 'http://numbermemorygame.onrender.com/oauth2/authorization/kakao',  
+    naver: 'http://numbermemorygame.onrender.com/oauth2/authorization/naver',   
+    logout: 'http://numbermemorygame.onrender.com/api/logout', 
+    user: 'http://numbermemorygame.onrender.com/api/user' 
+};
+
+function adjustGameWrapperHeight() {
+    if (window.innerWidth >= 900) {
+        if (gameWrapper) {
+            gameWrapper.style.height = ''; 
+            gameWrapper.style.minHeight = '';
+        }
+        if (leaderboardWrapper) {
+            leaderboardWrapper.style.height = ''; 
+            leaderboardWrapper.style.minHeight = '';
+        }
+        return; 
+    }
+
+    if (!gameWrapper || !leaderboardWrapper) return;
+
+    const h1Title = document.querySelector('h1'); 
+    const userStatus = document.getElementById('userStatusContainer');
+    const leaderboardToggle = document.getElementById('leaderboard-toggle-btn');
+
+    let maxBottomY = 0;
+
+    if (h1Title) {
+        maxBottomY = Math.max(maxBottomY, h1Title.getBoundingClientRect().bottom + 20); 
+    }
+
+    if (userStatus) {
+        maxBottomY = Math.max(maxBottomY, userStatus.getBoundingClientRect().bottom + 10);
+    }
+    
+    if (leaderboardToggle) {
+        maxBottomY = Math.max(maxBottomY, leaderboardToggle.getBoundingClientRect().bottom + 10);
+    }
+    
+    const topBoundaryY = maxBottomY;
+    
+    const themeToggle = document.getElementById('theme-toggle');
+    let bottomBoundaryY = window.innerHeight;
+    
+    const gameWrapperBottomMargin = 30; 
+    
+    if (themeToggle && themeToggle.classList.contains('bottom-right-btn')) {
+        const themeRect = themeToggle.getBoundingClientRect();
+        
+        const safetyMargin = 15;
+        // 하단 버튼이 존재할 경우: 버튼 상단 위치 - CSS margin-bottom - 안전 여백을 경계로 설정
+        bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin; 
+        
+    } else {
+        // 하단 버튼이 없을 경우: 뷰포트 높이 - CSS margin-bottom을 경계로 설정
+        bottomBoundaryY = window.innerHeight - gameWrapperBottomMargin;
+    }
+    
+    let finalHeight = bottomBoundaryY - topBoundaryY;
+    
+    const minHeight = 400;
+
+    finalHeight = Math.max(finalHeight, minHeight);
+    
+    const heightStyle = `${finalHeight}px`;
+
+    gameWrapper.style.height = heightStyle;
+    gameWrapper.style.minHeight = heightStyle;
+    leaderboardWrapper.style.height = heightStyle;
+    leaderboardWrapper.style.minHeight = heightStyle;
+}
+
+
 function checkLayoutMode() {
     mobileLayout = window.innerWidth < 900;
     mainContent.classList.toggle('mobile-layout', mobileLayout);
+    
+    adjustGameWrapperHeight();
 
     if (mobileLayout) {
+        leaderboardToggleBtn.classList.add('top-right'); 
         leaderboardToggleBtn.style.display = 'flex';
         if (leaderboardWrapper.classList.contains('is-visible') && !isGameActive) {
             restartBtn.style.display = 'block';
@@ -34,6 +119,7 @@ function checkLayoutMode() {
         }
         leaderboardToggleBtn.innerText = leaderboardWrapper.classList.contains('is-visible') ? '❌' : '🏆';
     } else {
+        leaderboardToggleBtn.classList.remove('top-right');
         leaderboardToggleBtn.style.display = 'none';
         leaderboardWrapper.classList.add('is-visible');
         restartBtn.style.display = 'none';
@@ -69,6 +155,7 @@ if (restartBtn) {
 }
 
 window.addEventListener('resize', checkLayoutMode);
+window.addEventListener('orientationchange', checkLayoutMode);
 document.addEventListener('DOMContentLoaded', checkLayoutMode);
 
 function applyTheme(theme) {
@@ -95,7 +182,17 @@ themeToggle.onclick = () => {
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 };
 
+function resetModalToScoreMode() {
+    if (loginModalContent) {
+        loginModalContent.style.display = 'none';
+    }
+    modalMessage.style.display = 'block';
+    modalConfirmBtn.style.display = 'block';
+}
+
 function showModal(title, message, callback) {
+    resetModalToScoreMode();
+    
     modalTitle.innerText = title;
     modalMessage.innerText = message;
     
@@ -116,6 +213,111 @@ function showModal(title, message, callback) {
     modalOverlay.onclick = closeModalOnly;
     
     modalOverlay.classList.add('show');
+}
+
+function showLoginModal() {
+    modalTitle.innerText = "소셜 로그인";
+    modalMessage.innerText = "계정을 연결하여\n점수를 기록하세요.";
+    modalMessage.style.display = 'block';
+    modalConfirmBtn.style.display = 'none';
+    
+    if (loginModalContent) {
+        loginModalContent.style.display = 'block';
+    }
+
+    const closeLoginModal = (e) => {
+        if (e.target === modalOverlay || e.currentTarget === closeBtn) {
+            modalOverlay.classList.remove('show');
+            resetModalToScoreMode();
+        }
+    };
+
+    closeBtn.onclick = closeLoginModal;
+    modalOverlay.onclick = closeLoginModal;
+    
+    modalOverlay.classList.add('show');
+    
+    setupSocialLogin();
+}
+
+function setupSocialLogin() {
+    if (socialLoginContainer) {
+        socialLoginContainer.addEventListener('click', (e) => {
+            const btn = e.target.closest('.social-btn');
+            if (btn) {
+                const provider = btn.dataset.provider;
+                const loginUrl = SOCIAL_LOGIN_URLS[provider];
+                
+                if (loginUrl) {
+                    modalOverlay.classList.remove('show'); 
+                    window.location.href = loginUrl;
+                } else {
+                    showModal('로그인 오류', `현재 ${provider} 로그인은 지원하지 않습니다.`, null);
+                }
+            }
+        });
+    }
+}
+
+function checkLoginStatus() {
+    fetch(SOCIAL_LOGIN_URLS.user, { credentials: 'include' })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+            isAuthenticated = false;
+            userProfile = null;
+            throw new Error('Not logged in'); 
+        })
+        .then(user => {
+            isAuthenticated = true;
+            userProfile = user; 
+            updateUserStatusUI(user);
+        })
+        .catch(err => {
+            isAuthenticated = false;
+            userProfile = null;
+            updateUserStatusUI();
+        });
+}
+
+function updateUserStatusUI(user = null) {
+    userStatusContainer.innerHTML = '';
+    
+    if (user && isAuthenticated) {
+        const userName = user.name || user.email || '사용자';
+        userStatusContainer.innerHTML = `
+            <span id="userInfoDisplay">${userName}님</span>
+            <button id="logoutBtn">로그아웃</button>
+        `;
+        document.getElementById('logoutBtn').onclick = handleLogout;
+    } else {
+        userStatusContainer.innerHTML = `
+            <button id="loginBtn">로그인</button>
+        `;
+        document.getElementById('loginBtn').onclick = showLoginModal;
+    }
+}
+
+function handleLogout() {
+    fetch(SOCIAL_LOGIN_URLS.logout, {
+        method: 'POST',
+        credentials: 'include'
+    })
+    .then(res => {
+        if (res.ok) {
+            isAuthenticated = false;
+            userProfile = null;
+            updateUserStatusUI();
+            showModal('로그아웃 완료', '성공적으로 로그아웃되었습니다.', null);
+        } else {
+            throw new Error('Logout failed on server.');
+        }
+    })
+    .catch(err => {
+        console.error('Logout error:', err);
+        showModal('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.', null);
+    });
 }
 
 startBtn.onclick = () => {
@@ -146,15 +348,15 @@ function startStage(stage) {
     timeLeft = 10 + (currentStage * 0.5);
     timerEl.innerText = `남은 시간: ${timeLeft.toFixed(1)}s`;
 
-    const wrapperHeight = gameWrapper.clientHeight;
+    const wrapperHeight = gameWrapper.clientHeight; 
     const wrapperWidth = gameWrapper.clientWidth; 
     
     const infoContainerHeight = document.getElementById('infoContainer').offsetHeight;
-    const timerDisplayHeight = timerEl.offsetHeight + 30;
+    const timerDisplayHeight = timerEl.offsetHeight;
 
     const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20; 
     const availableWidth = wrapperWidth - 40; 
-    
+
     const cellSize = 65; 
     const maxCols = Math.floor(availableWidth / cellSize);
     const maxRows = Math.floor(availableHeight / cellSize);
@@ -283,6 +485,12 @@ function endGame() {
 }
 
 function submitScore(score) {
+    if (!isAuthenticated) {
+        showModal('로그인 필요', `총 점수 ${score}점을 기록하려면 먼저 로그인해야 합니다.`, showLoginModal);
+        fetchLeaderboard(); 
+        return;
+    }
+    
     fetch(`/api/score?score=${score}`, {
         method: 'POST',
         headers: {
@@ -295,7 +503,9 @@ function submitScore(score) {
             console.log('Score submitted successfully.');
             showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
         } else if (response.status === 401) {
-            showModal('점수 기록 실패', '점수를 기록하려면 먼저 Google로 로그인해야 합니다.', fetchLeaderboard);
+            isAuthenticated = false; 
+            updateUserStatusUI();
+            showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', fetchLeaderboard);
         } else if (response.status === 409 || response.status === 429 || response.status === 500) {
             console.log('Duplicate score submission detected or server error.');
             showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, fetchLeaderboard);
@@ -411,6 +621,8 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
 
 fetchLeaderboard();
+checkLoginStatus(); 
+setupSocialLogin(); 
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

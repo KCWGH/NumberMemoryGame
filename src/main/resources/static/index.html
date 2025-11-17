@@ -10,17 +10,21 @@
 <link rel="stylesheet" href="style/style.css"> 
 </head>
 <body>
+    
+    <div id="userStatusContainer">
+        <button id="loginBtn">로그인</button>
+    </div>
+    
+    <div id="leaderboard-toggle-btn" class="top-toggle-btn top-right">
+        🏆
+    </div>
 
-    <div id="theme-toggle" class="top-toggle-btn">
+    <div id="theme-toggle" class="bottom-right-btn">
         <span class="icon sun">☀️</span>
         <span class="icon moon">🌙</span>
     </div>
     
-    <div id="leaderboard-toggle-btn" class="top-toggle-btn">
-        🏆
-    </div>
-
-<h1>숫자 기억 게임</h1>
+    <h1>숫자 기억 게임</h1>
 <div id="mainContent">
     <div id="gameWrapper">
         <div id="infoContainer">
@@ -37,7 +41,7 @@
     <div id="leaderboardWrapper">
         <h2>순위표 🏆</h2>
         <ol id="leaderboard"></ol>
-        <button id="restartBtn" style="display: none;">다시 하기</button>
+        <button id="restartBtn" style="display: none;">돌아가기</button>
     </div>
 </div>
 
@@ -46,6 +50,21 @@
         <span class="close-btn">&times;</span>
         <h2 id="modalTitle"></h2>
         <p id="modalMessage"></p>
+        
+        <div id="loginModalContent" style="display: none;">
+            <div id="socialLoginContainer">
+                <button class="social-btn google" data-provider="google">
+                    G
+                </button>
+                <button class="social-btn kakao" data-provider="kakao">
+                    K
+                </button>
+                <button class="social-btn naver" data-provider="naver">
+                    N
+                </button>
+            </div>
+        </div>
+
         <button id="modalConfirmBtn">확인</button>
     </div>
 </div>
