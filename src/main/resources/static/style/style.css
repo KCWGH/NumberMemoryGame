@@ -393,10 +393,10 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     padding: 10px 0; 
     border-bottom: 1px solid var(--leaderboard-border); 
     font-size: 1.1em; 
-    padding-left: 35px; /* 랭크 번호와 아이콘을 위한 공간 확보 */
+    padding-left: 35px; 
 }
 #leaderboard li:last-child { border-bottom: none; }
-#leaderboard li span { font-weight: 700; color: var(--text-color); }
+#leaderboard li span { font-weight: 700; color: var(--text-color); } /* 이 스타일은 .leaderboard-score로 대체되지만, 혹시 다른 span이 있다면 남아있을 수 있음 */
 #leaderboard li::before { 
     counter-increment: leaderboard-counter; 
     content: counter(leaderboard-counter) "."; 
@@ -404,7 +404,7 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     left: 0; 
     font-weight: bold; 
     color: var(--text-color); 
-    width: 30px; /* 랭크 번호 공간 조정 */
+    width: 30px; 
     text-align: left; 
 }
 #leaderboard li:nth-child(1) { color: var(--leaderboard-gold); font-weight: bold; }
@@ -417,12 +417,41 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 #leaderboard li:nth-child(3) span { color: var(--leaderboard-bronze); }
 #leaderboard li:nth-child(3)::before { color: var(--leaderboard-bronze); }
 
+/* 이름만 담는 Wrapper (왼쪽 정렬) */
+.user-info-wrapper {
+    display: flex;       
+    align-items: center; 
+    flex-grow: 1; 
+    min-width: 0; 
+    margin-right: 10px; /* 이름과 오른쪽 그룹 사이 간격 */
+}
+
+/* 🏆 점수와 아이콘을 묶는 Wrapper (오른쪽 정렬) */
+.score-provider-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0; 
+}
+
 .leaderboard-provider-icon {
     width: 16px; 
     height: 16px;
-    margin-right: 8px; /* 아이콘과 이름 사이 간격 */
-    flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 설정 */
+    margin-right: 3px; /* 아이콘과 점수 사이 간격 */
+    flex-shrink: 0; 
 }
+
+/* 🏆 점수 텍스트에 고정 폭 적용 */
+.leaderboard-score {
+    font-weight: 700; 
+    color: var(--text-color);
+    width: 60px; 
+    text-align: right; 
+}
+
+#leaderboard li:nth-child(1) .leaderboard-score { color: var(--leaderboard-gold); }
+#leaderboard li:nth-child(2) .leaderboard-score { color: var(--leaderboard-silver); }
+#leaderboard li:nth-child(3) .leaderboard-score { color: var(--leaderboard-bronze); }
+
 
 #restartBtn {
     width: 100%;

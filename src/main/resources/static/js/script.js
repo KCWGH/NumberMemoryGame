@@ -501,7 +501,7 @@ function endGame() {
 
 function submitScore(score) {
     if (!isAuthenticated) {
-        showModal('로그인 필요', `총 점수 ${score}점을 기록하려면 먼저 로그인해야 합니다.`, showLoginModal);
+        showModal('로그인 필요', `총 점수 ${score}점은 기록되지 않습니다.\n점수를 기록하려면 로그인해 주세요.`, showLoginModal);
         fetchLeaderboard(); 
         return;
     }
@@ -557,7 +557,6 @@ function fetchLeaderboard() {
         data.forEach(s => {
             const scoreValue = s.scoreValue; 
             const userName = s.user ? s.user : 'Unknown User';
-            // 백엔드에서 받은 provider 값을 소문자로 변환하여 사용
             const provider = s.provider ? s.provider.toLowerCase() : 'unknown'; 
             
             let iconPath = '';
@@ -571,7 +570,16 @@ function fetchLeaderboard() {
             
             let iconHtml = iconPath ? `<img src="${iconPath}" alt="${provider}" class="leaderboard-provider-icon">` : '';
             
-            ol.innerHTML += `<li>${iconHtml} ${userName} <span>${scoreValue} 점</span></li>`;
+            const userInfoHtml = `<div class="user-info-wrapper">${userName}</div>`; 
+            
+            const scoreProviderHtml = `
+                <div class="score-provider-wrapper">
+                    ${iconHtml}
+                    <span class="leaderboard-score">${scoreValue} 점</span>
+                </div>
+            `;
+            
+            ol.innerHTML += `<li>${userInfoHtml} ${scoreProviderHtml}</li>`;
         });
     })
     .catch(err => {
