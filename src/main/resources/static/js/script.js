@@ -80,11 +80,9 @@ function adjustGameWrapperHeight() {
         const themeRect = themeToggle.getBoundingClientRect();
         
         const safetyMargin = 15;
-        // 하단 버튼이 존재할 경우: 버튼 상단 위치 - CSS margin-bottom - 안전 여백을 경계로 설정
         bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin; 
         
     } else {
-        // 하단 버튼이 없을 경우: 뷰포트 높이 - CSS margin-bottom을 경계로 설정
         bottomBoundaryY = window.innerHeight - gameWrapperBottomMargin;
     }
     
@@ -286,8 +284,25 @@ function updateUserStatusUI(user = null) {
     
     if (user && isAuthenticated) {
         const userName = user.name || user.email || '사용자';
+        const provider = user.provider ? user.provider.toLowerCase() : 'unknown'; 
+        
+        let iconHtml = '';
+        let iconPath = '';
+        
+        if (provider === 'google') {
+            iconPath = '../icons/logo_google.svg';
+        } else if (provider === 'kakao') {
+            iconPath = '../icons/logo_kakao.svg';
+        } else if (provider === 'naver') {
+            iconPath = '../icons/logo_naver.svg';
+        }
+
+        if (iconPath) {
+            iconHtml = `<img src="${iconPath}" alt="${provider} icon" class="provider-icon">`;
+        }
+        
         userStatusContainer.innerHTML = `
-            <span id="userInfoDisplay">${userName}님</span>
+            <span id="userInfoDisplay">${iconHtml} ${userName}님</span>
             <button id="logoutBtn">로그아웃</button>
         `;
         document.getElementById('logoutBtn').onclick = handleLogout;
@@ -542,7 +557,21 @@ function fetchLeaderboard() {
         data.forEach(s => {
             const scoreValue = s.scoreValue; 
             const userName = s.user ? s.user : 'Unknown User';
-            ol.innerHTML += `<li>${userName} <span>${scoreValue} 점</span></li>`;
+            // 백엔드에서 받은 provider 값을 소문자로 변환하여 사용
+            const provider = s.provider ? s.provider.toLowerCase() : 'unknown'; 
+            
+            let iconPath = '';
+            if (provider === 'google') {
+                iconPath = '../icons/logo_google.svg';
+            } else if (provider === 'kakao') {
+                iconPath = '../icons/logo_kakao.svg';
+            } else if (provider === 'naver') {
+                iconPath = '../icons/logo_naver.svg';
+            }
+            
+            let iconHtml = iconPath ? `<img src="${iconPath}" alt="${provider}" class="leaderboard-provider-icon">` : '';
+            
+            ol.innerHTML += `<li>${iconHtml} ${userName} <span>${scoreValue} 점</span></li>`;
         });
     })
     .catch(err => {

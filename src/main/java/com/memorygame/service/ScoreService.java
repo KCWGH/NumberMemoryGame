@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.memorygame.dto.ScoreResponseDto; // 👈 새로 생성한 DTO import
+import com.memorygame.dto.ScoreResponseDto; 
 import com.memorygame.model.Score;
 import com.memorygame.model.User;
 import com.memorygame.repository.ScoreRepository;
@@ -43,8 +43,12 @@ public class ScoreService {
     // DTO를 사용하여 필요한 정보만 반환
     public List<ScoreResponseDto> getLeaderboard() {
         return scoreRepository.findTop10ByOrderByScoreValueDesc().stream()
-            // DTO 생성자 변경: (scoreValue, userName)
-            .map(score -> new ScoreResponseDto(score.getScoreValue(), score.getUser().getName()))
+            // DTO 생성자 변경: (scoreValue, userName, provider)
+            .map(score -> new ScoreResponseDto(
+                score.getScoreValue(), 
+                score.getUser().getName(), 
+                score.getUser().getProvider().toString()
+            ))
             .toList();
     }
 }

@@ -7,5 +7,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ScoreResponseDto {
     private final int scoreValue;
-    private final String user; 
+    private final String user;
+    private final String provider;
 }

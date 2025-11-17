@@ -157,6 +157,15 @@ h1 {
 }
 #userInfoDisplay {
     cursor: default;
+    display: flex;
+    align-items: center;
+    gap: 6px; 
+}
+
+.provider-icon {
+    width: 18px; 
+    height: 18px;
+    vertical-align: middle;
 }
 
 .top-toggle-btn {
@@ -376,10 +385,28 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 
 #leaderboardWrapper h2 { color: var(--text-color); text-align: center; margin-bottom: 20px; font-size: 1.8em; font-weight: 700; }
 #leaderboard { list-style: none; padding: 0; margin: 0; counter-reset: leaderboard-counter; }
-#leaderboard li { position: relative; display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--leaderboard-border); font-size: 1.1em; padding-left: 30px; }
+#leaderboard li { 
+    position: relative; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 10px 0; 
+    border-bottom: 1px solid var(--leaderboard-border); 
+    font-size: 1.1em; 
+    padding-left: 35px; /* 랭크 번호와 아이콘을 위한 공간 확보 */
+}
 #leaderboard li:last-child { border-bottom: none; }
 #leaderboard li span { font-weight: 700; color: var(--text-color); }
-#leaderboard li::before { counter-increment: leaderboard-counter; content: counter(leaderboard-counter) "."; position: absolute; left: 0; font-weight: bold; color: var(--text-color); width: 25px; text-align: right; }
+#leaderboard li::before { 
+    counter-increment: leaderboard-counter; 
+    content: counter(leaderboard-counter) "."; 
+    position: absolute; 
+    left: 0; 
+    font-weight: bold; 
+    color: var(--text-color); 
+    width: 30px; /* 랭크 번호 공간 조정 */
+    text-align: left; 
+}
 #leaderboard li:nth-child(1) { color: var(--leaderboard-gold); font-weight: bold; }
 #leaderboard li:nth-child(1) span { color: var(--leaderboard-gold); }
 #leaderboard li:nth-child(1)::before { color: var(--leaderboard-gold); }
@@ -389,6 +416,13 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 #leaderboard li:nth-child(3) { color: var(--leaderboard-bronze); font-weight: bold; }
 #leaderboard li:nth-child(3) span { color: var(--leaderboard-bronze); }
 #leaderboard li:nth-child(3)::before { color: var(--leaderboard-bronze); }
+
+.leaderboard-provider-icon {
+    width: 16px; 
+    height: 16px;
+    margin-right: 8px; /* 아이콘과 이름 사이 간격 */
+    flex-shrink: 0; /* 공간이 부족해도 줄어들지 않도록 설정 */
+}
 
 #restartBtn {
     width: 100%;
