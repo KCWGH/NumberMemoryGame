@@ -1,6 +1,8 @@
 package com.memorygame.config;
 
 import java.util.Collections;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,6 +19,9 @@ import com.memorygame.service.CustomOAuth2UserService;
 @EnableWebSecurity
 public class SecurityConfig {
 
+	@Value("${cors.allowed-origin}")
+    private String allowedOrigin;
+	
     private final CustomOAuth2UserService customOAuth2UserService;
 
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
@@ -55,7 +60,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("https://numbermemorygame.onrender.com"));
+        configuration.setAllowedOrigins(Collections.singletonList(allowedOrigin));
         configuration.setAllowedMethods(Collections.singletonList("*"));
         configuration.setAllowedHeaders(Collections.singletonList("*"));
         configuration.setAllowCredentials(true); 

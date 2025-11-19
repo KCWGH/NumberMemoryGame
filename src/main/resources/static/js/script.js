@@ -33,12 +33,15 @@ const userStatusContainer = document.getElementById('userStatusContainer');
 const loginModalContent = document.getElementById('loginModalContent'); 
 const socialLoginContainer = document.getElementById('socialLoginContainer');
 
+const BASE_URL = window.location.origin;
+
 const SOCIAL_LOGIN_URLS = {
-    google: 'https://numbermemorygame.onrender.com/oauth2/authorization/google', 
-    kakao: 'https://numbermemorygame.onrender.com/oauth2/authorization/kakao',  
-    naver: 'https://numbermemorygame.onrender.com/oauth2/authorization/naver',   
-    logout: 'https://numbermemorygame.onrender.com/api/logout', 
-    user: 'https://numbermemorygame.onrender.com/api/user' 
+    google: `${BASE_URL}/oauth2/authorization/google`, 
+    kakao: `${BASE_URL}/oauth2/authorization/kakao`,  
+    naver: `${BASE_URL}/oauth2/authorization/naver`,   
+    
+    logout: `${BASE_URL}/api/logout`, 
+    user: `${BASE_URL}/api/user` 
 };
 
 function initAudioContext() {
