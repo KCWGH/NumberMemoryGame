@@ -29,45 +29,49 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GameController {
 
-	private final ScoreService scoreService;
-	private final UserRepository userRepository;
+    private final ScoreService scoreService;
+    private final UserRepository userRepository;
 
     @GetMapping("/user")
     public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal OAuth2User oauth2User) {
-        if (oauth2User == null) {
-            return new ResponseEntity<>("Not Authenticated", HttpStatus.UNAUTHORIZED);
-        }
-        
         Map<String, Object> userInfo = new HashMap<>();
-        
+
+        if (oauth2User == null) {
+            userInfo.put("authenticated", false);
+            return ResponseEntity.ok(userInfo);
+        }
+
+        userInfo.put("authenticated", true);
+
         try {
-            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext()
+                    .getAuthentication();
             String registrationId = authentication.getAuthorizedClientRegistrationId();
             ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
             String providerId = oauth2User.getName();
-            
+
             User user = userRepository.findByProviderAndProviderId(providerType, providerId)
-                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
-                
+                    .orElseThrow(() -> new IllegalStateException("인증된 사용자를 찾을 수 없습니다."));
+
             userInfo.put("name", user.getName());
             userInfo.put("email", user.getEmail());
-            
+
         } catch (Exception e) {
             String name = oauth2User.getAttribute("name");
             String email = oauth2User.getAttribute("email");
-            
+
             userInfo.put("name", name != null ? name : email);
             userInfo.put("email", email);
-            
+
             if (userInfo.get("name") == null && userInfo.get("email") == null) {
                 userInfo.put("name", "인증된 사용자");
             }
         }
-        
+
         return ResponseEntity.ok(userInfo);
     }
 
-	@PostMapping("/score")
+    @PostMapping("/score")
     public ResponseEntity<?> submitScore(@RequestParam int score, @AuthenticationPrincipal OAuth2User oauth2User) {
         if (oauth2User == null) {
             return new ResponseEntity<>("로그인이 필요합니다.", HttpStatus.UNAUTHORIZED);
@@ -78,32 +82,33 @@ public class GameController {
         }
 
         String providerId = oauth2User.getName();
-        
+
         try {
-            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext()
+                    .getAuthentication();
             String registrationId = authentication.getAuthorizedClientRegistrationId();
             ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
-            
+
             User user = userRepository.findByProviderAndProviderId(providerType, providerId)
                     .orElseThrow(() -> new IllegalStateException("인증된 사용자를 DB에서 찾을 수 없습니다."));
-            
+
             scoreService.saveScore(user, score);
             return ResponseEntity.ok("점수가 성공적으로 기록되었습니다.");
-            
+
         } catch (ClassCastException | NullPointerException e) {
             return new ResponseEntity<>("인증 정보가 유효하지 않습니다.", HttpStatus.UNAUTHORIZED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>("지원되지 않는 로그인 공급자입니다.", HttpStatus.UNAUTHORIZED);
         } catch (IllegalStateException e) {
             return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(e.getMessage());
+                    .status(HttpStatus.CONFLICT)
+                    .body(e.getMessage());
         }
     }
 
-	@GetMapping("/leaderboard")
+    @GetMapping("/leaderboard")
     public ResponseEntity<List<ScoreResponseDto>> getLeaderboard() {
         List<ScoreResponseDto> scores = scoreService.getLeaderboard();
         return ResponseEntity.ok(scores);
-	}
+    }
 }

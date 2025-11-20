@@ -4,7 +4,7 @@ let isGameActive = false;
 let mobileLayout = false;
 
 let isAuthenticated = false;
-let userProfile = null; 
+let userProfile = null;
 
 let audioContext;
 let currentFrequency;
@@ -13,7 +13,7 @@ const PITCH_STEP = 1.059463;
 
 const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
-const timerEl = document.getElementById('timerDisplay'); 
+const timerEl = document.getElementById('timerDisplay');
 const gameWrapper = document.getElementById('gameWrapper');
 const startBtn = document.getElementById('startBtn');
 const blockGridContainer = document.getElementById('blockGridContainer');
@@ -30,37 +30,37 @@ const mainContent = document.getElementById('mainContent');
 const restartBtn = document.getElementById('restartBtn');
 
 const userStatusContainer = document.getElementById('userStatusContainer');
-const loginModalContent = document.getElementById('loginModalContent'); 
+const loginModalContent = document.getElementById('loginModalContent');
 const socialLoginContainer = document.getElementById('socialLoginContainer');
 
 const BASE_URL = window.location.origin;
 
 const SOCIAL_LOGIN_URLS = {
-    google: `${BASE_URL}/oauth2/authorization/google`, 
-    kakao: `${BASE_URL}/oauth2/authorization/kakao`,  
-    naver: `${BASE_URL}/oauth2/authorization/naver`,   
-    
-    logout: `${BASE_URL}/api/logout`, 
-    user: `${BASE_URL}/api/user` 
+    google: `${BASE_URL}/oauth2/authorization/google`,
+    kakao: `${BASE_URL}/oauth2/authorization/kakao`,
+    naver: `${BASE_URL}/oauth2/authorization/naver`,
+
+    logout: `${BASE_URL}/api/logout`,
+    user: `${BASE_URL}/api/user`
 };
 
 function initAudioContext() {
     if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext = new (window.AudioContext || window.AudioContext)();
         currentFrequency = BASE_FREQUENCY;
     }
 }
 
 function playSuccessSound() {
     initAudioContext();
-    
+
     const stepIndex = nextNumberToClick - 1;
-    
+
     currentFrequency = BASE_FREQUENCY * Math.pow(PITCH_STEP, stepIndex);
-    
+
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
 
@@ -70,72 +70,72 @@ function playSuccessSound() {
     gainNode.connect(audioContext.destination);
 
     oscillator.start();
-    
+
     const attackTime = 0.01;
     const decayTime = 0.15;
-    
+
     gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + attackTime);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + attackTime + decayTime);
-    
+
     oscillator.stop(audioContext.currentTime + attackTime + decayTime + 0.05);
 }
 
 function adjustGameWrapperHeight() {
     if (window.innerWidth >= 900) {
         if (gameWrapper) {
-            gameWrapper.style.height = ''; 
+            gameWrapper.style.height = '';
             gameWrapper.style.minHeight = '';
         }
         if (leaderboardWrapper) {
-            leaderboardWrapper.style.height = ''; 
+            leaderboardWrapper.style.height = '';
             leaderboardWrapper.style.minHeight = '';
         }
-        return; 
+        return;
     }
 
     if (!gameWrapper || !leaderboardWrapper) return;
 
-    const h1Title = document.querySelector('h1'); 
+    const h1Title = document.querySelector('h1');
     const userStatus = document.getElementById('userStatusContainer');
     const leaderboardToggle = document.getElementById('leaderboard-toggle-btn');
 
     let maxBottomY = 0;
 
     if (h1Title) {
-        maxBottomY = Math.max(maxBottomY, h1Title.getBoundingClientRect().bottom + 20); 
+        maxBottomY = Math.max(maxBottomY, h1Title.getBoundingClientRect().bottom + 20);
     }
 
     if (userStatus) {
         maxBottomY = Math.max(maxBottomY, userStatus.getBoundingClientRect().bottom + 10);
     }
-    
+
     if (leaderboardToggle) {
         maxBottomY = Math.max(maxBottomY, leaderboardToggle.getBoundingClientRect().bottom + 10);
     }
-    
+
     const topBoundaryY = maxBottomY;
-    
+
     const themeToggle = document.getElementById('theme-toggle');
     let bottomBoundaryY = window.innerHeight;
-    
-    const gameWrapperBottomMargin = 30; 
-    
+
+    const gameWrapperBottomMargin = 30;
+
     if (themeToggle && themeToggle.classList.contains('bottom-right-btn')) {
         const themeRect = themeToggle.getBoundingClientRect();
-        
+
         const safetyMargin = 15;
-        bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin; 
-        
+        bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin;
+
     } else {
         bottomBoundaryY = window.innerHeight - gameWrapperBottomMargin;
     }
-    
+
     let finalHeight = bottomBoundaryY - topBoundaryY;
-    
+
     const minHeight = 400;
 
     finalHeight = Math.max(finalHeight, minHeight);
-    
+
     const heightStyle = `${finalHeight}px`;
 
     gameWrapper.style.height = heightStyle;
@@ -148,11 +148,11 @@ function adjustGameWrapperHeight() {
 function checkLayoutMode() {
     mobileLayout = window.innerWidth < 900;
     mainContent.classList.toggle('mobile-layout', mobileLayout);
-    
+
     adjustGameWrapperHeight();
 
     if (mobileLayout) {
-        leaderboardToggleBtn.classList.add('top-right'); 
+        leaderboardToggleBtn.classList.add('top-right');
         leaderboardToggleBtn.style.display = 'flex';
         if (leaderboardWrapper.classList.contains('is-visible') && !isGameActive) {
             restartBtn.style.display = 'block';
@@ -175,10 +175,10 @@ leaderboardToggleBtn.onclick = () => {
 
     const isVisible = leaderboardWrapper.classList.toggle('is-visible');
     leaderboardToggleBtn.innerText = isVisible ? '❌' : '🏆';
-    
-    gameWrapper.style.display = isVisible ? 'none' : 'flex'; 
+
+    gameWrapper.style.display = isVisible ? 'none' : 'flex';
     leaderboardWrapper.style.display = isVisible ? 'block' : 'none';
-    
+
     restartBtn.style.display = (isVisible && !isGameActive) ? 'block' : 'none';
 };
 
@@ -234,10 +234,10 @@ function resetModalToScoreMode() {
 
 function showModal(title, message, callback) {
     resetModalToScoreMode();
-    
+
     modalTitle.innerText = title;
     modalMessage.innerText = message;
-    
+
     modalConfirmBtn.onclick = () => {
         modalOverlay.classList.remove('show');
         if (callback) callback();
@@ -253,7 +253,7 @@ function showModal(title, message, callback) {
 
     closeBtn.onclick = closeModalOnly;
     modalOverlay.onclick = closeModalOnly;
-    
+
     modalOverlay.classList.add('show');
 }
 
@@ -262,7 +262,7 @@ function showLoginModal() {
     modalMessage.innerText = "계정을 연결하여\n점수를 기록하세요.";
     modalMessage.style.display = 'block';
     modalConfirmBtn.parentElement.style.display = 'none';
-    
+
     if (loginModalContent) {
         loginModalContent.style.display = 'block';
     }
@@ -276,9 +276,9 @@ function showLoginModal() {
 
     closeBtn.onclick = closeLoginModal;
     modalOverlay.onclick = closeLoginModal;
-    
+
     modalOverlay.classList.add('show');
-    
+
     setupSocialLogin();
 }
 
@@ -289,9 +289,9 @@ function setupSocialLogin() {
             if (btn) {
                 const provider = btn.dataset.provider;
                 const loginUrl = SOCIAL_LOGIN_URLS[provider];
-                
+
                 if (loginUrl) {
-                    modalOverlay.classList.remove('show'); 
+                    modalOverlay.classList.remove('show');
                     window.location.href = loginUrl;
                 } else {
                     showModal('로그인 오류', `현재 ${provider} 로그인은 지원하지 않습니다.`, null);
@@ -307,16 +307,21 @@ function checkLoginStatus() {
             if (res.ok) {
                 return res.json();
             }
-            isAuthenticated = false;
-            userProfile = null;
-            throw new Error('Not logged in'); 
+            throw new Error('Network response was not ok');
         })
-        .then(user => {
-            isAuthenticated = true;
-            userProfile = user; 
-            updateUserStatusUI(user);
+        .then(data => {
+            if (data.authenticated) {
+                isAuthenticated = true;
+                userProfile = data;
+                updateUserStatusUI(data);
+            } else {
+                isAuthenticated = false;
+                userProfile = null;
+                updateUserStatusUI();
+            }
         })
         .catch(err => {
+            console.error('Login check failed:', err);
             isAuthenticated = false;
             userProfile = null;
             updateUserStatusUI();
@@ -325,14 +330,14 @@ function checkLoginStatus() {
 
 function updateUserStatusUI(user = null) {
     userStatusContainer.innerHTML = '';
-    
+
     if (user && isAuthenticated) {
         const userName = user.name || user.email || '사용자';
-        const provider = user.provider ? user.provider.toLowerCase() : 'unknown'; 
-        
+        const provider = user.provider ? user.provider.toLowerCase() : 'unknown';
+
         let iconHtml = '';
         let iconPath = '';
-        
+
         if (provider === 'google') {
             iconPath = '../icons/logo_google.svg';
         } else if (provider === 'kakao') {
@@ -344,7 +349,7 @@ function updateUserStatusUI(user = null) {
         if (iconPath) {
             iconHtml = `<img src="${iconPath}" alt="${provider} icon" class="provider-icon">`;
         }
-        
+
         userStatusContainer.innerHTML = `
             <span id="userInfoDisplay">${iconHtml} ${userName}님</span>
             <button id="logoutBtn">로그아웃</button>
@@ -363,29 +368,29 @@ function handleLogout() {
         method: 'POST',
         credentials: 'include'
     })
-    .then(res => {
-        if (res.ok) {
-            isAuthenticated = false;
-            userProfile = null;
-            updateUserStatusUI();
-            showModal('로그아웃 완료', '성공적으로 로그아웃되었습니다.', null);
-        } else {
-            throw new Error('Logout failed on server.');
-        }
-    })
-    .catch(err => {
-        console.error('Logout error:', err);
-        showModal('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.', null);
-    });
+        .then(res => {
+            if (res.ok) {
+                isAuthenticated = false;
+                userProfile = null;
+                updateUserStatusUI();
+                showModal('로그아웃 완료', '성공적으로 로그아웃되었습니다.', null);
+            } else {
+                throw new Error('Logout failed on server.');
+            }
+        })
+        .catch(err => {
+            console.error('Logout error:', err);
+            showModal('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.', null);
+        });
 }
 
 startBtn.onclick = () => {
     if (!isGameActive) {
         initAudioContext();
-        
-        startBtn.style.display = 'none'; 
+
+        startBtn.style.display = 'none';
         startStage(1);
-        
+
         if (mobileLayout) {
             leaderboardWrapper.classList.remove('is-visible');
             gameWrapper.style.display = 'flex';
@@ -409,16 +414,16 @@ function startStage(stage) {
     timeLeft = 10 + (currentStage * 0.5);
     timerEl.innerText = `남은 시간: ${timeLeft.toFixed(1)}s`;
 
-    const wrapperHeight = gameWrapper.clientHeight; 
-    const wrapperWidth = gameWrapper.clientWidth; 
-    
+    const wrapperHeight = gameWrapper.clientHeight;
+    const wrapperWidth = gameWrapper.clientWidth;
+
     const infoContainerHeight = document.getElementById('infoContainer').offsetHeight;
     const timerDisplayHeight = timerEl.offsetHeight;
 
-    const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20; 
-    const availableWidth = wrapperWidth - 40; 
+    const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20;
+    const availableWidth = wrapperWidth - 40;
 
-    const cellSize = 65; 
+    const cellSize = 65;
     const maxCols = Math.floor(availableWidth / cellSize);
     const maxRows = Math.floor(availableHeight / cellSize);
 
@@ -427,12 +432,12 @@ function startStage(stage) {
 
     let gridLayout = generateConnectedBlock(numToRemember, actualMaxRows, actualMaxCols);
 
-    if (!gridLayout) { 
+    if (!gridLayout) {
         const numBlocks = numToRemember;
         let cols = Math.min(numBlocks, actualMaxCols);
         let rows = Math.ceil(numBlocks / cols);
-        
-        while(rows > actualMaxRows && cols > 1) { 
+
+        while (rows > actualMaxRows && cols > 1) {
             cols--;
             rows = Math.ceil(numBlocks / cols);
         }
@@ -449,7 +454,7 @@ function startStage(stage) {
 
     gridLayout.forEach(pos => {
         const cell = document.createElement('div');
-        cell.classList.add('cell', 'revealed'); 
+        cell.classList.add('cell', 'revealed');
         const number = numbersToFind.shift();
         cell.dataset.number = number;
         cell.innerText = number;
@@ -463,7 +468,7 @@ function startStage(stage) {
     setTimeout(() => {
         blockGridContainer.querySelectorAll('.cell').forEach(c => {
             c.innerText = "";
-            c.classList.remove('revealed'); 
+            c.classList.remove('revealed');
         });
         startTimer();
     }, 2000);
@@ -488,7 +493,7 @@ function handleClick(cell) {
     const num = parseInt(cell.dataset.number);
     if (num === nextNumberToClick) {
         playSuccessSound();
-        
+
         cell.classList.add('correct');
         cell.innerText = num;
         nextNumberToClick++;
@@ -513,26 +518,26 @@ function endGame() {
     blockGridContainer.querySelectorAll('.cell').forEach(c => {
         c.onclick = null;
         if (!c.classList.contains('correct') && !c.classList.contains('wrong')) {
-            c.classList.add('revealed'); 
+            c.classList.add('revealed');
             c.innerText = c.dataset.number;
         }
     });
 
     setTimeout(() => {
         if (totalScore > 0) {
-            submitScore(totalScore); 
+            submitScore(totalScore);
         } else {
             fetchLeaderboard();
         }
-        
+
         totalScore = 0;
         currentStage = 1;
         stageEl.innerText = `스테이지: 1`;
         scoreEl.innerText = `점수: 0`;
         timerEl.innerText = `남은 시간: 10.0s`;
-        
+
         blockGridContainer.innerHTML = '';
-        
+
         if (mobileLayout) {
             gameWrapper.style.display = 'none';
             leaderboardWrapper.classList.add('is-visible');
@@ -550,10 +555,10 @@ function endGame() {
 function submitScore(score) {
     if (!isAuthenticated) {
         showModal('로그인 필요', `총 점수 ${score}점은 기록되지 않습니다.\n점수를 기록하려면 로그인해 주세요.`, showLoginModal);
-        fetchLeaderboard(); 
+        fetchLeaderboard();
         return;
     }
-    
+
     fetch(`/api/score?score=${score}`, {
         method: 'POST',
         headers: {
@@ -561,80 +566,80 @@ function submitScore(score) {
         },
         credentials: 'include'
     })
-    .then(response => {
-        if (response.ok) {
-            console.log('Score submitted successfully.');
-            showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
-        } else if (response.status === 401) {
-            isAuthenticated = false; 
-            updateUserStatusUI();
-            showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', fetchLeaderboard);
-        } else if (response.status === 409 || response.status === 429 || response.status === 500) {
-            console.log('Duplicate score submission detected or server error.');
-            showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, fetchLeaderboard);
-        } else {
-            console.error('Score submission failed with status:', response.status);
-            showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, fetchLeaderboard);
-        }
-    })
-    .catch(err => {
-        console.error('Score submission network error:', err);
-        showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', fetchLeaderboard);
-    });
+        .then(response => {
+            if (response.ok) {
+                console.log('Score submitted successfully.');
+                showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
+            } else if (response.status === 401) {
+                isAuthenticated = false;
+                updateUserStatusUI();
+                showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', fetchLeaderboard);
+            } else if (response.status === 409 || response.status === 429 || response.status === 500) {
+                console.log('Duplicate score submission detected or server error.');
+                showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, fetchLeaderboard);
+            } else {
+                console.error('Score submission failed with status:', response.status);
+                showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, fetchLeaderboard);
+            }
+        })
+        .catch(err => {
+            console.error('Score submission network error:', err);
+            showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', fetchLeaderboard);
+        });
 }
 
 function fetchLeaderboard() {
-    fetch('/api/leaderboard',   {
-        credentials: 'include' 
+    fetch('/api/leaderboard', {
+        credentials: 'include'
     })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-    })
-    .then(data => {
-        const ol = document.getElementById('leaderboard');
-        ol.innerHTML = "";
-        
-        if (data.length === 0) {
-            ol.innerHTML = "<li>No scores yet!</li>";
-            return;
-        }
-        
-        data.forEach(s => {
-            const scoreValue = s.scoreValue; 
-            const userName = s.user ? s.user : 'Unknown User';
-            const provider = s.provider ? s.provider.toLowerCase() : 'unknown'; 
-            
-            let iconPath = '';
-            if (provider === 'google') {
-                iconPath = '../icons/logo_google.svg';
-            } else if (provider === 'kakao') {
-                iconPath = '../icons/logo_kakao.svg';
-            } else if (provider === 'naver') {
-                iconPath = '../icons/logo_naver.svg';
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
             }
-            
-            let iconHtml = iconPath ? `<img src="${iconPath}" alt="${provider}" class="leaderboard-provider-icon">` : '';
-            
-            const userInfoHtml = `<div class="user-info-wrapper">${userName}</div>`; 
-            
-            const scoreProviderHtml = `
+            return res.json();
+        })
+        .then(data => {
+            const ol = document.getElementById('leaderboard');
+            ol.innerHTML = "";
+
+            if (data.length === 0) {
+                ol.innerHTML = "<li>No scores yet!</li>";
+                return;
+            }
+
+            data.forEach(s => {
+                const scoreValue = s.scoreValue;
+                const userName = s.user ? s.user : 'Unknown User';
+                const provider = s.provider ? s.provider.toLowerCase() : 'unknown';
+
+                let iconPath = '';
+                if (provider === 'google') {
+                    iconPath = '../icons/logo_google.svg';
+                } else if (provider === 'kakao') {
+                    iconPath = '../icons/logo_kakao.svg';
+                } else if (provider === 'naver') {
+                    iconPath = '../icons/logo_naver.svg';
+                }
+
+                let iconHtml = iconPath ? `<img src="${iconPath}" alt="${provider}" class="leaderboard-provider-icon">` : '';
+
+                const userInfoHtml = `<div class="user-info-wrapper">${userName}</div>`;
+
+                const scoreProviderHtml = `
                 <div class="score-provider-wrapper">
                     ${iconHtml}
                     <span class="leaderboard-score">${scoreValue} 점</span>
                 </div>
             `;
-            
-            ol.innerHTML += `<li>${userInfoHtml} ${scoreProviderHtml}</li>`;
+
+                ol.innerHTML += `<li>${userInfoHtml} ${scoreProviderHtml}</li>`;
+            });
+        })
+        .catch(err => {
+            console.error('Failed to fetch leaderboard:', err);
+            const ol = document.getElementById('leaderboard');
+            ol.innerHTML = '<li>Error loading leaderboard.</li>';
         });
-    })
-    .catch(err => {
-        console.error('Failed to fetch leaderboard:', err);
-        const ol = document.getElementById('leaderboard');
-        ol.innerHTML = '<li>Error loading leaderboard.</li>';
-    });
 }
 
 function shuffleArray(array) {
@@ -706,17 +711,17 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
 
 fetchLeaderboard();
-checkLoginStatus(); 
-setupSocialLogin(); 
+checkLoginStatus();
+setupSocialLogin();
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')
-        .then(registration => {
-            console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch(error => {
-            console.error('Service Worker registration failed:', error);
-        });
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
     });
 }
