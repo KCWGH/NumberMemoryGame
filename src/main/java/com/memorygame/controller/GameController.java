@@ -1,7 +1,6 @@
 package com.memorygame.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.memorygame.dto.ScoreResponseDto;
 import com.memorygame.model.ProviderType;
 import com.memorygame.model.User;
 import com.memorygame.repository.UserRepository;
@@ -29,8 +27,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class GameController {
 
-    private final ScoreService scoreService;
     private final UserRepository userRepository;
+    private final ScoreService scoreService;
 
     @GetMapping("/user")
     public ResponseEntity<?> getUserInfo(@AuthenticationPrincipal OAuth2User oauth2User) {
@@ -55,6 +53,7 @@ public class GameController {
 
             userInfo.put("name", user.getName());
             userInfo.put("email", user.getEmail());
+            userInfo.put("provider", user.getProvider().toString());
 
         } catch (Exception e) {
             String name = oauth2User.getAttribute("name");
@@ -62,6 +61,7 @@ public class GameController {
 
             userInfo.put("name", name != null ? name : email);
             userInfo.put("email", email);
+            userInfo.put("provider", "UNKNOWN");
 
             if (userInfo.get("name") == null && userInfo.get("email") == null) {
                 userInfo.put("name", "인증된 사용자");
@@ -71,6 +71,7 @@ public class GameController {
         return ResponseEntity.ok(userInfo);
     }
 
+    // ...existing code...
     @PostMapping("/score")
     public ResponseEntity<?> submitScore(@RequestParam int score, @AuthenticationPrincipal OAuth2User oauth2User) {
         if (oauth2User == null) {
@@ -107,8 +108,7 @@ public class GameController {
     }
 
     @GetMapping("/leaderboard")
-    public ResponseEntity<List<ScoreResponseDto>> getLeaderboard() {
-        List<ScoreResponseDto> scores = scoreService.getLeaderboard();
-        return ResponseEntity.ok(scores);
+    public ResponseEntity<?> getLeaderboard() {
+        return ResponseEntity.ok(scoreService.getLeaderboard());
     }
 }
