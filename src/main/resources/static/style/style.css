@@ -282,14 +282,15 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     }
 
     #leaderboardWrapper {
-        display: block !important; 
+        display: flex !important; 
+        flex-direction: column;
         margin: 0 0 0 20px; 
         width: 360px; 
         min-width: 360px;
         max-width: 360px;
         min-height: 550px; 
         height: 550px; 
-        overflow-y: auto; 
+        overflow: hidden; 
         padding: 25px; 
         flex-grow: 0;
     }
@@ -383,8 +384,26 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 .cell.wrong { background-color: var(--cell-wrong-bg); animation: shake 0.5s; }
 @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(8px); } 75% { transform: translateX(-8px); } 100% { transform: translateX(0); } }
 
-#leaderboardWrapper h2 { color: var(--text-color); text-align: center; margin-bottom: 20px; font-size: 1.8em; font-weight: 700; }
-#leaderboard { list-style: none; padding: 0; margin: 0; counter-reset: leaderboard-counter; }
+#leaderboardWrapper h2 { 
+    color: var(--text-color); 
+    text-align: center; 
+    margin-bottom: 10px; 
+    margin-top: 0;
+    padding: 0;
+    font-size: 1.8em; 
+    font-weight: 700; 
+}
+
+#leaderboard { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+    counter-reset: leaderboard-counter; 
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
 #leaderboard li { 
     position: relative; 
     display: flex; 
@@ -418,7 +437,7 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
 #leaderboard li:nth-child(3)::before { color: var(--leaderboard-bronze); }
 
 .user-info-wrapper {
-    display: flex;       
+    display: flex;       
     align-items: center; 
     flex-grow: 1; 
     min-width: 0; 
@@ -551,9 +570,9 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     transition: background 0.2s, transform 0.1s;
     
-    width: 100%;             
-    max-width: 250px;        
-    display: inline-block;   
+    width: 100%;             
+    max-width: 250px;        
+    display: inline-block;   
     margin: 20px auto 0 auto;
 }
 
