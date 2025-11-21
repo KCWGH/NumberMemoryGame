@@ -198,7 +198,6 @@ if (restartBtn) {
 
 window.addEventListener('resize', checkLayoutMode);
 window.addEventListener('orientationchange', checkLayoutMode);
-document.addEventListener('DOMContentLoaded', checkLayoutMode);
 
 function applyTheme(theme) {
     document.body.classList.toggle('dark-mode', theme === 'dark');
@@ -629,9 +628,9 @@ function fetchLeaderboard() {
             }
 
             data.forEach(s => {
-                const scoreValue = s.scoreValue || 0;
-                const userName = s.user ? s.user : 'Unknown User';
-                const provider = s.provider ? s.provider.toLowerCase() : 'unknown';
+                const scoreValue = s.scoreValue || s.score || 0;
+                const userName = s.user || s.name || s.email || 'Unknown User';
+                const provider = (s.provider || s.loginProvider || 'unknown').toLowerCase();
 
                 let iconPath = '';
                 if (provider === 'google') {
@@ -731,11 +730,23 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 }
 
 
-fetchLeaderboard();
-checkLoginStatus().then(() => {
-    console.log('Login status checked');
-});
-setupSocialLogin();
+function init() {
+    checkLayoutMode();
+    
+    setupSocialLogin();
+
+    checkLoginStatus()
+        .then(() => {
+            fetchLeaderboard();
+            console.log('Login status checked, UI updated, and Leaderboard fetched.');
+        })
+        .catch(error => {
+            fetchLeaderboard();
+            console.error('Login status check failed, but fetching leaderboard anyway:', error);
+        });
+}
+
+document.addEventListener('DOMContentLoaded', init);
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
