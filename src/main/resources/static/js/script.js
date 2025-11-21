@@ -286,7 +286,7 @@ function setupSocialLogin() {
         const newContainer = socialLoginContainer.cloneNode(true);
         socialLoginContainer.parentNode.replaceChild(newContainer, socialLoginContainer);
         socialLoginContainer = newContainer;
-        
+
         socialLoginContainer.addEventListener('click', (e) => {
             const btn = e.target.closest('.social-btn');
             if (btn) {
@@ -306,8 +306,8 @@ function setupSocialLogin() {
 
 function checkLoginStatus() {
     const cacheBreaker = new Date().getTime();
-    
-    return fetch(`${SOCIAL_LOGIN_URLS.user}?t=${cacheBreaker}`, { 
+
+    return fetch(`${SOCIAL_LOGIN_URLS.user}?t=${cacheBreaker}`, {
         credentials: 'include',
         cache: 'no-store'
     })
@@ -576,11 +576,12 @@ function submitScore(score) {
 
     const cacheBreaker = new Date().getTime();
 
-    fetch(`/api/score?score=${score}&t=${cacheBreaker}`, {
+    fetch(`/api/score?t=${cacheBreaker}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
+        body: JSON.stringify({ score: score }),
         credentials: 'include',
         cache: 'no-store'
     })
@@ -608,7 +609,7 @@ function submitScore(score) {
 
 function fetchLeaderboard() {
     const cacheBreaker = new Date().getTime();
-    
+
     fetch(`/api/leaderboard?t=${cacheBreaker}`, {
         credentials: 'include',
         cache: 'no-store'
@@ -733,7 +734,7 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
 function init() {
     checkLayoutMode();
-    
+
     setupSocialLogin();
 
     checkLoginStatus()
