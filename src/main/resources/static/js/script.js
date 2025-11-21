@@ -31,7 +31,7 @@ const restartBtn = document.getElementById('restartBtn');
 
 const userStatusContainer = document.getElementById('userStatusContainer');
 const loginModalContent = document.getElementById('loginModalContent');
-const socialLoginContainer = document.getElementById('socialLoginContainer');
+let socialLoginContainer = document.getElementById('socialLoginContainer');
 
 const BASE_URL = window.location.origin;
 
@@ -285,8 +285,9 @@ function setupSocialLogin() {
     if (socialLoginContainer) {
         const newContainer = socialLoginContainer.cloneNode(true);
         socialLoginContainer.parentNode.replaceChild(newContainer, socialLoginContainer);
+        socialLoginContainer = newContainer;
         
-        newContainer.addEventListener('click', (e) => {
+        socialLoginContainer.addEventListener('click', (e) => {
             const btn = e.target.closest('.social-btn');
             if (btn) {
                 const provider = btn.dataset.provider;
