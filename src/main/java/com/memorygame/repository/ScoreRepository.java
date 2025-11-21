@@ -10,9 +10,11 @@ import com.memorygame.model.User;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
 
-    @Query("SELECT s FROM Score s ORDER BY s.scoreValue DESC, s.playedAt ASC LIMIT 10")
-    List<Score> findTop10ByOrderByScoreValueDesc();
-    
+    @Query("SELECT s FROM Score s WHERE s.playedAt >= :startOfDay ORDER BY s.scoreValue DESC, s.playedAt ASC LIMIT 10")
+    List<Score> findTop10ByOrderByScoreValueDesc(java.time.LocalDateTime startOfDay);
+
     boolean existsByUserAndScoreValue(User user, int scoreValue);
-    
+
+    void deleteByPlayedAtBefore(java.time.LocalDateTime dateTime);
+
 }
