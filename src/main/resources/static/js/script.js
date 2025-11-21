@@ -46,7 +46,7 @@ const SOCIAL_LOGIN_URLS = {
 
 function initAudioContext() {
     if (!audioContext) {
-        audioContext = new (window.AudioContext || window.AudioContext)();
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
         currentFrequency = BASE_FREQUENCY;
     }
 }
@@ -284,7 +284,10 @@ function showLoginModal() {
 
 function setupSocialLogin() {
     if (socialLoginContainer) {
-        socialLoginContainer.addEventListener('click', (e) => {
+        const newContainer = socialLoginContainer.cloneNode(true);
+        socialLoginContainer.parentNode.replaceChild(newContainer, socialLoginContainer);
+        
+        newContainer.addEventListener('click', (e) => {
             const btn = e.target.closest('.social-btn');
             if (btn) {
                 const provider = btn.dataset.provider;
@@ -302,7 +305,12 @@ function setupSocialLogin() {
 }
 
 function checkLoginStatus() {
-    fetch(SOCIAL_LOGIN_URLS.user, { credentials: 'include' })
+    const cacheBreaker = new Date().getTime();
+    
+    return fetch(`${SOCIAL_LOGIN_URLS.user}?t=${cacheBreaker}`, { 
+        credentials: 'include',
+        cache: 'no-store'
+    })
         .then(res => {
             if (res.ok) {
                 return res.json();
@@ -319,6 +327,7 @@ function checkLoginStatus() {
                 userProfile = null;
                 updateUserStatusUI();
             }
+            return data;
         })
         .catch(err => {
             console.error('Login check failed:', err);
@@ -417,7 +426,13 @@ function startStage(stage) {
     const wrapperHeight = gameWrapper.clientHeight;
     const wrapperWidth = gameWrapper.clientWidth;
 
-    const infoContainerHeight = document.getElementById('infoContainer').offsetHeight;
+    const infoContainer = document.getElementById('infoContainer');
+    if (!infoContainer) {
+        console.error('infoContainer not found');
+        return;
+    }
+
+    const infoContainerHeight = infoContainer.offsetHeight;
     const timerDisplayHeight = timerEl.offsetHeight;
 
     const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20;
@@ -432,7 +447,7 @@ function startStage(stage) {
 
     let gridLayout = generateConnectedBlock(numToRemember, actualMaxRows, actualMaxCols);
 
-    if (!gridLayout) {
+    if (!gridLayout || gridLayout.length === 0) {
         const numBlocks = numToRemember;
         let cols = Math.min(numBlocks, actualMaxCols);
         let rows = Math.ceil(numBlocks / cols);
@@ -559,12 +574,15 @@ function submitScore(score) {
         return;
     }
 
-    fetch(`/api/score?score=${score}`, {
+    const cacheBreaker = new Date().getTime();
+
+    fetch(`/api/score?score=${score}&t=${cacheBreaker}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        credentials: 'include'
+        credentials: 'include',
+        cache: 'no-store'
     })
         .then(response => {
             if (response.ok) {
@@ -589,8 +607,11 @@ function submitScore(score) {
 }
 
 function fetchLeaderboard() {
-    fetch('/api/leaderboard', {
-        credentials: 'include'
+    const cacheBreaker = new Date().getTime();
+    
+    fetch(`/api/leaderboard?t=${cacheBreaker}`, {
+        credentials: 'include',
+        cache: 'no-store'
     })
         .then(res => {
             if (!res.ok) {
@@ -608,7 +629,7 @@ function fetchLeaderboard() {
             }
 
             data.forEach(s => {
-                const scoreValue = s.scoreValue;
+                const scoreValue = s.scoreValue || 0;
                 const userName = s.user ? s.user : 'Unknown User';
                 const provider = s.provider ? s.provider.toLowerCase() : 'unknown';
 
@@ -711,7 +732,9 @@ function generateConnectedBlock(numBlocks, maxRows, maxCols) {
 
 
 fetchLeaderboard();
-checkLoginStatus();
+checkLoginStatus().then(() => {
+    console.log('Login status checked');
+});
 setupSocialLogin();
 
 if ('serviceWorker' in navigator) {
