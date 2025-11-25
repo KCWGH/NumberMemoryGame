@@ -1,3 +1,11 @@
+﻿@font-face {
+    font-family: 'Pretendard';
+    src: url('../fonts/PretendardVariable.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
 :root {
     --card-bg: #ffffff;
     --card-shadow: 0 0.25em 0.9375em rgba(0, 0, 0, 0.1);
@@ -273,7 +281,7 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        /* 변경된 부분: flex-start -> center */
+        /* 蹂寃쎈맂 遺遺? flex-start -> center */
         width: auto;
         max-width: none;
         padding: 0;
@@ -774,4 +782,30 @@ body.dark-mode .social-btn.naver {
     background-color: #ffffff !important;
     border: 0.0625em solid var(--leaderboard-border);
     box-shadow: 0 0.1875em 0.625em rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard-tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1em;
+    border-bottom: 2px solid var(--leaderboard-border);
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+}
+
+.tab-btn.active {
+    opacity: 1;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: -2px;
 }

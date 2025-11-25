@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.memorygame.dto.ScoreSubmissionDto;
@@ -98,7 +99,26 @@ public class GameController {
     }
 
     @GetMapping("/leaderboard")
-    public ResponseEntity<?> getLeaderboard() {
+    public ResponseEntity<?> getLeaderboard(@RequestParam(required = false) String filter,
+            @AuthenticationPrincipal OAuth2User oauth2User) {
+
+        if ("my".equalsIgnoreCase(filter)) {
+            if (oauth2User == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+            }
+
+            String providerId = oauth2User.getName();
+            OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext()
+                    .getAuthentication();
+            String registrationId = authentication.getAuthorizedClientRegistrationId();
+            ProviderType providerType = ProviderType.valueOf(registrationId.toUpperCase());
+
+            User user = userRepository.findByProviderAndProviderId(providerType, providerId)
+                    .orElseThrow(() -> new IllegalStateException("인증된 사용자를 DB에서 찾을 수 없습니다."));
+
+            return ResponseEntity.ok(scoreService.getMyScores(user));
+        }
+
         return ResponseEntity.ok(scoreService.getLeaderboard());
     }
 }

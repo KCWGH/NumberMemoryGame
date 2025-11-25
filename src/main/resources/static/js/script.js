@@ -607,20 +607,32 @@ function submitScore(score) {
         });
 }
 
-function fetchLeaderboard() {
+function fetchLeaderboard(type = 'all') {
     const cacheBreaker = new Date().getTime();
+    let url = `/api/leaderboard?t=${cacheBreaker}`;
+    if (type === 'my') {
+        url += '&filter=my';
+    }
 
-    fetch(`/api/leaderboard?t=${cacheBreaker}`, {
+    fetch(url, {
         credentials: 'include',
         cache: 'no-store'
     })
         .then(res => {
             if (!res.ok) {
+                if (res.status === 401 && type === 'my') {
+                    showModal('로그인 필요', '나의 기록을 보려면 로그인이 필요합니다.', showLoginModal);
+                    // Switch back to 'all' tab visually
+                    document.querySelector('.tab-btn[data-tab="all"]').click();
+                    return []; // Return empty array to clear list or handle gracefully
+                }
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             return res.json();
         })
         .then(data => {
+            if (!Array.isArray(data)) return; // Handle empty or error case
+
             const ol = document.getElementById('leaderboard');
             ol.innerHTML = "";
 
@@ -671,6 +683,15 @@ function shuffleArray(array) {
     }
     return array;
 }
+
+// Tab Event Listeners
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        fetchLeaderboard(btn.dataset.tab);
+    });
+});
 
 function generateConnectedBlock(numBlocks, maxRows, maxCols) {
     const grid = Array(maxRows).fill(0).map(() => Array(maxCols).fill(false));
