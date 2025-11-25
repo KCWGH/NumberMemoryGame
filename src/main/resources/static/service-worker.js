@@ -1,72 +1,99 @@
-// 캐시 이름과 캐시할 정적 파일 목록을 정의합니다.
-const CACHE_NAME = 'number-memory-game-v1';
-const OFFLINE_URL = 'index.html';
+const CACHE_VERSION = 'v1.0.0';
+const CACHE_NAME = `number-memory-game-${CACHE_VERSION}`;
+const OFFLINE_URL = '/index.html';
 
-// 게임 구동에 필수적인 모든 정적 파일 목록
-const ASSETS_TO_CACHE = [
+const STATIC_ASSETS = [
     '/',
-    'style/style.css',
-    'js/script.js',
-    'fonts/PretendardVariable.woff2', 
+    '/index.html',
+    '/style/style.css',
+    '/js/script.js',
+    '/fonts/PretendardVariable.woff2',
+    '/manifest.json',
+    '/icons/favicon.ico',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+    '/icons/logo_google.svg',
+    '/icons/logo_kakao.svg',
+    '/icons/logo_naver.svg'
 ];
 
-// --- 설치 (Install) 단계 ---
 self.addEventListener('install', event => {
-    console.log('[Service Worker] Installing...');
+    console.log('[SW] Installing service worker version:', CACHE_VERSION);
     event.waitUntil(
         caches.open(CACHE_NAME)
-        .then(async cache => {
-            console.log('[Service Worker] Caching app shell');
-            try {
-                return await cache.addAll(ASSETS_TO_CACHE);
-            } catch (error) {
-                console.error('[Service Worker] Cache addAll failed:', error);
-            }
-        })
+            .then(cache => {
+                console.log('[SW] Caching static assets');
+                return cache.addAll(STATIC_ASSETS);
+            })
+            .catch(error => {
+                console.error('[SW] Failed to cache assets:', error);
+            })
     );
+    self.skipWaiting();
 });
 
-// --- 활성화 (Activate) 단계 ---
 self.addEventListener('activate', event => {
-    console.log('[Service Worker] Activating...');
+    console.log('[SW] Activating service worker version:', CACHE_VERSION);
     event.waitUntil(
-        caches.keys().then(keyList => {
-            return Promise.all(keyList.map(key => {
-                if (key !== CACHE_NAME) {
-                    console.log('[Service Worker] Deleting old cache:', key);
-                    return caches.delete(key);
-                }
-            }));
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('[SW] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
         })
     );
     return self.clients.claim();
 });
 
-// --- 페치 (Fetch) 단계 ---
 self.addEventListener('fetch', event => {
-    const requestUrl = new URL(event.request.url);
+    const { request } = event;
+    const url = new URL(request.url);
 
-    // 1. API 요청 및 OAuth2 로그인 요청은 네트워크를 사용합니다.
-    if (requestUrl.pathname.startsWith('/api/') || requestUrl.pathname.includes('/oauth2/')) {
-        // 네트워크 요청 후 응답이 없어도 캐시 응답을 반환할 필요가 없어 fetch(event.request)를 그대로 반환
-        return; 
+    if (url.origin !== location.origin) {
+        return;
     }
-    
-    // 2. 나머지 정적 자산은 'Cache First, then Network' 전략을 사용하며, 실패 시 폴백 응답을 제공합니다.
+
+    if (url.pathname.startsWith('/api/') || url.pathname.includes('/oauth2/') || url.pathname.includes('/login/')) {
+        event.respondWith(
+            fetch(request).catch(error => {
+                console.error('[SW] Network request failed:', error);
+                return new Response('Network error', {
+                    status: 503,
+                    statusText: 'Service Unavailable'
+                });
+            })
+        );
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request)
-        .then(response => {
-            // 캐시에 응답이 있으면 캐시된 응답을 반환
-            if (response) {
-                return response;
-            }
-            
-            // 캐시에 없으면 네트워크로 요청 시도
-            return fetch(event.request).catch(() => {
-                // ⚠️ 네트워크 요청 실패 시 (오프라인 상태 등) 폴백 제공
-                console.log('[Service Worker] Fetch failed, returning offline fallback.');
-                return caches.match(OFFLINE_URL);
-            });
-        })
+        caches.match(request)
+            .then(cachedResponse => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+
+                return fetch(request)
+                    .then(response => {
+                        if (!response || response.status !== 200 || response.type !== 'basic') {
+                            return response;
+                        }
+
+                        const responseToCache = response.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            cache.put(request, responseToCache);
+                        });
+
+                        return response;
+                    })
+                    .catch(() => {
+                        console.log('[SW] Serving offline fallback');
+                        return caches.match(OFFLINE_URL);
+                    });
+            })
     );
 });

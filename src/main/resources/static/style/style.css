@@ -281,7 +281,6 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        /* 蹂寃쎈맂 遺遺? flex-start -> center */
         width: auto;
         max-width: none;
         padding: 0;

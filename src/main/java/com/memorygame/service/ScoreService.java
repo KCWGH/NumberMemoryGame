@@ -24,8 +24,6 @@ public class ScoreService {
     @Transactional
     public void saveScore(User user, int scoreValue) {
         if (user != null && scoreValue > 0) {
-
-            // 1. 사용자(user)의 동일한 점수(scoreValue)가 오늘 날짜 내에 이미 존재하는지 확인
             java.time.LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
             java.time.LocalDateTime endOfDay = LocalDate.now().atTime(java.time.LocalTime.MAX);
 
@@ -33,11 +31,9 @@ public class ScoreService {
                     startOfDay, endOfDay);
 
             if (isDuplicate) {
-                // 중복 점수가 이미 존재하는 경우, 저장을 막고 예외 발생
                 throw new IllegalStateException("동일한 점수(" + scoreValue + ")가 오늘 이미 기록되어 있습니다.");
             }
 
-            // 2. 중복이 아니면 저장 진행
             Score score = Score.builder()
                     .user(user)
                     .scoreValue(scoreValue)
@@ -46,10 +42,8 @@ public class ScoreService {
         }
     }
 
-    // DTO를 사용하여 필요한 정보만 반환
     public List<ScoreResponseDto> getLeaderboard() {
         return scoreRepository.findTop10ByOrderByScoreValueDesc(LocalDate.now().atStartOfDay()).stream()
-                // DTO 생성자 변경: (scoreValue, userName, provider)
                 .map(score -> new ScoreResponseDto(
                         score.getScoreValue(),
                         score.getUser().getName(),
