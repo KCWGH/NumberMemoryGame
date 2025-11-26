@@ -7,7 +7,6 @@ const STATIC_ASSETS = [
     '/index.html',
     '/style/style.css',
     '/js/script.js',
-    '/fonts/PretendardVariable.woff2',
     '/manifest.json',
     '/icons/favicon.ico',
     '/icons/icon-192.png',
