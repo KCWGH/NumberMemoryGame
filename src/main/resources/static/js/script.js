@@ -258,7 +258,7 @@ function showModal(title, message, callback) {
 
 function showLoginModal() {
     modalTitle.innerText = "소셜 로그인";
-    modalMessage.innerText = "계정을 연결하여\n점수를 기록하세요.";
+    modalMessage.innerText = "로그인하여 점수를 기록하세요.";
     modalMessage.style.display = 'block';
     modalConfirmBtn.parentElement.style.display = 'none';
 

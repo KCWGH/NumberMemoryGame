@@ -641,8 +641,8 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     border-radius: 0.75em;
     box-shadow: var(--card-shadow);
     margin: 0 1.25em;
-    width: auto;
-    max-width: 25em;
+    width: 19em;
+    max-width: 90vw;
     text-align: center;
     position: relative;
     transition: transform 0.3s ease-out;
@@ -726,8 +726,8 @@ body.dark-mode #theme-toggle.bottom-right-btn .icon.moon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.125em;
-    height: 3.125em;
+    width: 2.5em;
+    height: 2.5em;
     border: none;
     border-radius: 50%;
     cursor: pointer;
