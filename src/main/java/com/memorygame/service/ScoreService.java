@@ -52,7 +52,7 @@ public class ScoreService {
     }
 
     public List<ScoreResponseDto> getMyScores(User user) {
-        return scoreRepository.findByUserOrderByPlayedAtDesc(user).stream()
+        return scoreRepository.findByUserOrderByScoreValueDesc(user).stream()
                 .map(score -> new ScoreResponseDto(
                         score.getScoreValue(),
                         score.getUser().getName(),

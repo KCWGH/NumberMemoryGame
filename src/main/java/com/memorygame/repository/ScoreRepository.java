@@ -16,7 +16,7 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
     boolean existsByUserAndScoreValueAndPlayedAtBetween(User user, int scoreValue, java.time.LocalDateTime start,
             java.time.LocalDateTime end);
 
-    List<Score> findByUserOrderByPlayedAtDesc(User user);
+    List<Score> findByUserOrderByScoreValueDesc(User user);
 
     void deleteByPlayedAtBefore(java.time.LocalDateTime dateTime);
 

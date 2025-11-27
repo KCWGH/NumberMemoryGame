@@ -576,6 +576,15 @@ function submitScore(score) {
 
     const cacheBreaker = new Date().getTime();
 
+    const switchToAllAndFetch = () => {
+        const allTabBtn = document.querySelector('.tab-btn[data-tab="all"]');
+        if (allTabBtn) {
+            allTabBtn.click();
+        } else {
+            fetchLeaderboard();
+        }
+    };
+
     fetch(`/api/score?t=${cacheBreaker}`, {
         method: 'POST',
         headers: {
@@ -588,22 +597,22 @@ function submitScore(score) {
         .then(response => {
             if (response.ok) {
                 console.log('Score submitted successfully.');
-                showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, fetchLeaderboard);
+                showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, switchToAllAndFetch);
             } else if (response.status === 401) {
                 isAuthenticated = false;
                 updateUserStatusUI();
-                showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', fetchLeaderboard);
+                showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', switchToAllAndFetch);
             } else if (response.status === 409 || response.status === 429 || response.status === 500) {
                 console.log('Duplicate score submission detected or server error.');
-                showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, fetchLeaderboard);
+                showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, switchToAllAndFetch);
             } else {
                 console.error('Score submission failed with status:', response.status);
-                showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, fetchLeaderboard);
+                showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, switchToAllAndFetch);
             }
         })
         .catch(err => {
             console.error('Score submission network error:', err);
-            showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', fetchLeaderboard);
+            showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', switchToAllAndFetch);
         });
 }
 
