@@ -44,6 +44,10 @@ const SOCIAL_LOGIN_URLS = {
     user: `${BASE_URL}/api/user`
 };
 
+function getCsrfToken() {
+    return document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+}
+
 function initAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -122,7 +126,6 @@ function adjustGameWrapperHeight() {
 
     if (themeToggle && themeToggle.classList.contains('bottom-right-btn')) {
         const themeRect = themeToggle.getBoundingClientRect();
-
         const safetyMargin = 15;
         bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin;
 
@@ -131,7 +134,6 @@ function adjustGameWrapperHeight() {
     }
 
     let finalHeight = bottomBoundaryY - topBoundaryY;
-
     const minHeight = 400;
 
     finalHeight = Math.max(finalHeight, minHeight);
@@ -375,6 +377,9 @@ function updateUserStatusUI(user = null) {
 function handleLogout() {
     fetch(SOCIAL_LOGIN_URLS.logout, {
         method: 'POST',
+        headers: {
+            'X-XSRF-TOKEN': getCsrfToken()
+        },
         credentials: 'include'
     })
         .then(res => {
@@ -588,7 +593,8 @@ function submitScore(score) {
     fetch(`/api/score?t=${cacheBreaker}`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken()
         },
         body: JSON.stringify({ score: score }),
         credentials: 'include',
@@ -631,16 +637,15 @@ function fetchLeaderboard(type = 'all') {
             if (!res.ok) {
                 if (res.status === 401 && type === 'my') {
                     showModal('로그인 필요', '나의 기록을 보려면 로그인이 필요합니다.', showLoginModal);
-                    // Switch back to 'all' tab visually
                     document.querySelector('.tab-btn[data-tab="all"]').click();
-                    return []; // Return empty array to clear list or handle gracefully
+                    return [];
                 }
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             return res.json();
         })
         .then(data => {
-            if (!Array.isArray(data)) return; // Handle empty or error case
+            if (!Array.isArray(data)) return;
 
             const ol = document.getElementById('leaderboard');
             ol.innerHTML = "";
@@ -693,7 +698,6 @@ function shuffleArray(array) {
     return array;
 }
 
-// Tab Event Listeners
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
