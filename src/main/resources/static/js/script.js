@@ -2,17 +2,14 @@ let currentStage = 1;
 let numbersToFind, nextNumberToClick, timeLeft, gameInterval, totalScore = 0;
 let isGameActive = false;
 let mobileLayout = false;
-
 let isAuthenticated = false;
 let userProfile = null;
 let currentSessionId = null;
 let clicksInCurrentStage = 0;
-
 let audioContext;
 let currentFrequency;
 const BASE_FREQUENCY = 440;
 const PITCH_STEP = 1.059463;
-
 const scoreEl = document.getElementById('score');
 const stageEl = document.getElementById('stage');
 const timerEl = document.getElementById('timerDisplay');
@@ -30,62 +27,44 @@ const modalConfirmBtn = document.getElementById('modalConfirmBtn');
 const closeBtn = document.querySelector('.close-btn');
 const mainContent = document.getElementById('mainContent');
 const restartBtn = document.getElementById('restartBtn');
-
 const userStatusContainer = document.getElementById('userStatusContainer');
 const loginModalContent = document.getElementById('loginModalContent');
 let socialLoginContainer = document.getElementById('socialLoginContainer');
-
 const BASE_URL = window.location.origin;
-
 const SOCIAL_LOGIN_URLS = {
     google: `${BASE_URL}/oauth2/authorization/google`,
     kakao: `${BASE_URL}/oauth2/authorization/kakao`,
     naver: `${BASE_URL}/oauth2/authorization/naver`,
-
     logout: `${BASE_URL}/api/logout`,
     user: `${BASE_URL}/api/user`
 };
-
 function getCsrfToken() {
-    return document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    return document.cookie.replace(/(?:(?:^|.*;\\s*)XSRF-TOKEN\\s*\\=\\s*([^;]*).*$)|^.*$/, "$1");
 }
-
 function initAudioContext() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         currentFrequency = BASE_FREQUENCY;
     }
 }
-
 function playSuccessSound() {
     initAudioContext();
-
     const stepIndex = nextNumberToClick - 1;
-
     currentFrequency = BASE_FREQUENCY * Math.pow(PITCH_STEP, stepIndex);
-
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-
     oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
-
     gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-
     oscillator.start();
-
     const attackTime = 0.01;
     const decayTime = 0.15;
-
     gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + attackTime);
     gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + attackTime + decayTime);
-
     oscillator.stop(audioContext.currentTime + attackTime + decayTime + 0.05);
 }
-
 function adjustGameWrapperHeight() {
     if (window.innerWidth >= 900) {
         if (gameWrapper) {
@@ -98,63 +77,44 @@ function adjustGameWrapperHeight() {
         }
         return;
     }
-
     if (!gameWrapper || !leaderboardWrapper) return;
-
     const h1Title = document.querySelector('h1');
     const userStatus = document.getElementById('userStatusContainer');
     const leaderboardToggle = document.getElementById('leaderboard-toggle-btn');
-
     let maxBottomY = 0;
-
     if (h1Title) {
         maxBottomY = Math.max(maxBottomY, h1Title.getBoundingClientRect().bottom + 20);
     }
-
     if (userStatus) {
         maxBottomY = Math.max(maxBottomY, userStatus.getBoundingClientRect().bottom + 10);
     }
-
     if (leaderboardToggle) {
         maxBottomY = Math.max(maxBottomY, leaderboardToggle.getBoundingClientRect().bottom + 10);
     }
-
     const topBoundaryY = maxBottomY;
-
     const themeToggle = document.getElementById('theme-toggle');
     let bottomBoundaryY = window.innerHeight;
-
     const gameWrapperBottomMargin = 30;
-
     if (themeToggle && themeToggle.classList.contains('bottom-right-btn')) {
         const themeRect = themeToggle.getBoundingClientRect();
         const safetyMargin = 15;
         bottomBoundaryY = themeRect.top - gameWrapperBottomMargin - safetyMargin;
-
     } else {
         bottomBoundaryY = window.innerHeight - gameWrapperBottomMargin;
     }
-
     let finalHeight = bottomBoundaryY - topBoundaryY;
     const minHeight = 400;
-
     finalHeight = Math.max(finalHeight, minHeight);
-
     const heightStyle = `${finalHeight}px`;
-
     gameWrapper.style.height = heightStyle;
     gameWrapper.style.minHeight = heightStyle;
     leaderboardWrapper.style.height = heightStyle;
     leaderboardWrapper.style.minHeight = heightStyle;
 }
-
-
 function checkLayoutMode() {
     mobileLayout = window.innerWidth < 900;
     mainContent.classList.toggle('mobile-layout', mobileLayout);
-
     adjustGameWrapperHeight();
-
     if (mobileLayout) {
         leaderboardToggleBtn.classList.add('top-right');
         leaderboardToggleBtn.style.display = 'flex';
@@ -173,19 +133,14 @@ function checkLayoutMode() {
         leaderboardWrapper.style.display = 'block';
     }
 }
-
 leaderboardToggleBtn.onclick = () => {
     if (!mobileLayout) return;
-
     const isVisible = leaderboardWrapper.classList.toggle('is-visible');
     leaderboardToggleBtn.innerText = isVisible ? '❌' : '🏆';
-
     gameWrapper.style.display = isVisible ? 'none' : 'flex';
     leaderboardWrapper.style.display = isVisible ? 'block' : 'none';
-
     restartBtn.style.display = (isVisible && !isGameActive) ? 'block' : 'none';
 };
-
 if (restartBtn) {
     restartBtn.onclick = () => {
         if (mobileLayout) {
@@ -199,20 +154,16 @@ if (restartBtn) {
         }
     };
 }
-
 window.addEventListener('resize', checkLayoutMode);
 window.addEventListener('orientationchange', checkLayoutMode);
-
 function applyTheme(theme) {
     document.body.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
-
     const themeColor = theme === 'dark' ? '#1a202c' : '#f0f4f8';
     if (themeColorMeta) {
         themeColorMeta.setAttribute('content', themeColor);
     }
 }
-
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme) {
     applyTheme(savedTheme);
@@ -221,12 +172,10 @@ if (savedTheme) {
 } else {
     applyTheme('light');
 }
-
 themeToggle.onclick = () => {
     const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
     applyTheme(currentTheme === 'light' ? 'dark' : 'light');
 };
-
 function resetModalToScoreMode() {
     if (loginModalContent) {
         loginModalContent.style.display = 'none';
@@ -234,18 +183,14 @@ function resetModalToScoreMode() {
     modalMessage.style.display = 'block';
     modalConfirmBtn.parentElement.style.display = 'block';
 }
-
 function showModal(title, message, callback) {
     resetModalToScoreMode();
-
     modalTitle.innerText = title;
     modalMessage.innerText = message;
-
     modalConfirmBtn.onclick = () => {
         modalOverlay.classList.remove('show');
         if (callback) callback();
     };
-
     const closeModalOnly = (e) => {
         if (e.target === modalOverlay || e.currentTarget === closeBtn) {
             modalOverlay.classList.remove('show');
@@ -253,50 +198,39 @@ function showModal(title, message, callback) {
             closeBtn.onclick = null;
         }
     };
-
     closeBtn.onclick = closeModalOnly;
     modalOverlay.onclick = closeModalOnly;
-
     modalOverlay.classList.add('show');
 }
-
 function showLoginModal() {
     modalTitle.innerText = "소셜 로그인";
     modalMessage.innerText = "로그인하여 점수를 기록하세요.";
     modalMessage.style.display = 'block';
     modalConfirmBtn.parentElement.style.display = 'none';
-
     if (loginModalContent) {
         loginModalContent.style.display = 'block';
     }
-
     const closeLoginModal = (e) => {
         if (e.target === modalOverlay || e.currentTarget === closeBtn) {
             modalOverlay.classList.remove('show');
             resetModalToScoreMode();
         }
     };
-
     closeBtn.onclick = closeLoginModal;
     modalOverlay.onclick = closeLoginModal;
-
     modalOverlay.classList.add('show');
-
     setupSocialLogin();
 }
-
 function setupSocialLogin() {
     if (socialLoginContainer) {
         const newContainer = socialLoginContainer.cloneNode(true);
         socialLoginContainer.parentNode.replaceChild(newContainer, socialLoginContainer);
         socialLoginContainer = newContainer;
-
         socialLoginContainer.addEventListener('click', (e) => {
             const btn = e.target.closest('.social-btn');
             if (btn) {
                 const provider = btn.dataset.provider;
                 const loginUrl = SOCIAL_LOGIN_URLS[provider];
-
                 if (loginUrl) {
                     modalOverlay.classList.remove('show');
                     window.location.href = loginUrl;
@@ -307,10 +241,8 @@ function setupSocialLogin() {
         });
     }
 }
-
 function checkLoginStatus() {
     const cacheBreaker = new Date().getTime();
-
     return fetch(`${SOCIAL_LOGIN_URLS.user}?t=${cacheBreaker}`, {
         credentials: 'include',
         cache: 'no-store'
@@ -340,17 +272,13 @@ function checkLoginStatus() {
             updateUserStatusUI();
         });
 }
-
 function updateUserStatusUI(user = null) {
     userStatusContainer.innerHTML = '';
-
     if (user && isAuthenticated) {
         const userName = user.name || user.email || '사용자';
         const provider = user.provider ? user.provider.toLowerCase() : 'unknown';
-
         let iconHtml = '';
         let iconPath = '';
-
         if (provider === 'google') {
             iconPath = '../icons/logo_google.svg';
         } else if (provider === 'kakao') {
@@ -358,11 +286,9 @@ function updateUserStatusUI(user = null) {
         } else if (provider === 'naver') {
             iconPath = '../icons/logo_naver.svg';
         }
-
         if (iconPath) {
             iconHtml = `<img src="${iconPath}" alt="${provider} icon" class="provider-icon">`;
         }
-
         userStatusContainer.innerHTML = `
             <span id="userInfoDisplay">${iconHtml} ${userName}님</span>
             <button id="logoutBtn">로그아웃</button>
@@ -375,7 +301,6 @@ function updateUserStatusUI(user = null) {
         document.getElementById('loginBtn').onclick = showLoginModal;
     }
 }
-
 function handleLogout() {
     fetch(SOCIAL_LOGIN_URLS.logout, {
         method: 'POST',
@@ -399,12 +324,12 @@ function handleLogout() {
             showModal('로그아웃 오류', '로그아웃 중 문제가 발생했습니다.', null);
         });
 }
-
 startBtn.onclick = () => {
     if (!isGameActive) {
         initAudioContext();
-
-        // Start game session on server
+        startBtn.disabled = true;
+        const originalText = startBtn.innerText;
+        startBtn.innerText = '시작 중...';
         fetch('/api/game/start', {
             method: 'POST',
             headers: {
@@ -412,13 +337,25 @@ startBtn.onclick = () => {
             },
             credentials: 'include'
         })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        throw new Error('로그인이 필요하거나 세션이 만료되었습니다.');
+                    }
+                    throw new Error(`서버 응답 오류: ${res.status}`);
+                }
+                return res.json();
+            })
             .then(data => {
+                if (!data.sessionId) {
+                    throw new Error('세션 ID를 받지 못했습니다.');
+                }
                 currentSessionId = data.sessionId;
                 startBtn.style.display = 'none';
-                totalScore = 0; // Reset score for display
+                startBtn.disabled = false;
+                startBtn.innerText = originalText;
+                totalScore = 0;
                 startStage(1);
-
                 if (mobileLayout) {
                     leaderboardWrapper.classList.remove('is-visible');
                     gameWrapper.style.display = 'flex';
@@ -428,70 +365,62 @@ startBtn.onclick = () => {
             })
             .catch(err => {
                 console.error('Failed to start game session:', err);
-                showModal('오류', '게임을 시작할 수 없습니다. 다시 시도해주세요.', null);
+                startBtn.disabled = false;
+                startBtn.innerText = originalText;
+                showModal('게임 시작 실패',
+                    err.message.includes('세션') || err.message.includes('로그인')
+                        ? err.message
+                        : '게임을 시작할 수 없습니다. 네트워크 연결을 확인하고 다시 시도해주세요.',
+                    null);
             });
     }
 };
-
 function startStage(stage) {
     clearInterval(gameInterval);
     isGameActive = true;
     currentStage = stage;
-    clicksInCurrentStage = 0; // Reset clicks for new stage
+    clicksInCurrentStage = 0;
     stageEl.innerText = `스테이지: ${currentStage}`;
     scoreEl.innerText = `점수: ${totalScore}`;
     blockGridContainer.innerHTML = '';
-
     const numToRemember = currentStage + 2;
     numbersToFind = shuffleArray([...Array(numToRemember).keys()].map(i => i + 1));
     nextNumberToClick = 1;
     timeLeft = 10 + (currentStage * 0.5);
     timerEl.innerText = `남은 시간: ${timeLeft.toFixed(1)}s`;
-
     const wrapperHeight = gameWrapper.clientHeight;
     const wrapperWidth = gameWrapper.clientWidth;
-
     const infoContainer = document.getElementById('infoContainer');
     if (!infoContainer) {
         console.error('infoContainer not found');
         return;
     }
-
     const infoContainerHeight = infoContainer.offsetHeight;
     const timerDisplayHeight = timerEl.offsetHeight;
-
     const availableHeight = wrapperHeight - infoContainerHeight - timerDisplayHeight - 20;
     const availableWidth = wrapperWidth - 40;
-
     const cellSize = 65;
     const maxCols = Math.floor(availableWidth / cellSize);
     const maxRows = Math.floor(availableHeight / cellSize);
-
     const actualMaxCols = Math.max(1, maxCols);
     const actualMaxRows = Math.max(1, maxRows);
-
     let gridLayout = generateConnectedBlock(numToRemember, actualMaxRows, actualMaxCols);
-
     if (!gridLayout || gridLayout.length === 0) {
         const numBlocks = numToRemember;
         let cols = Math.min(numBlocks, actualMaxCols);
         let rows = Math.ceil(numBlocks / cols);
-
         while (rows > actualMaxRows && cols > 1) {
             cols--;
             rows = Math.ceil(numBlocks / cols);
         }
         if (cols === 0) cols = 1;
-
         gridLayout = [];
         for (let i = 0; i < numBlocks; i++) {
             gridLayout.push({ row: Math.floor(i / cols), col: i % cols });
         }
     }
-
     const actualCols = Math.max(...gridLayout.map(p => p.col)) + 1;
     blockGridContainer.style.gridTemplateColumns = `repeat(${actualCols}, 60px)`;
-
     gridLayout.forEach(pos => {
         const cell = document.createElement('div');
         cell.classList.add('cell', 'revealed');
@@ -500,11 +429,9 @@ function startStage(stage) {
         cell.innerText = number;
         cell.style.gridRowStart = pos.row + 1;
         cell.style.gridColumnStart = pos.col + 1;
-
         cell.onclick = () => handleClick(cell);
         blockGridContainer.appendChild(cell);
     });
-
     setTimeout(() => {
         blockGridContainer.querySelectorAll('.cell').forEach(c => {
             c.innerText = "";
@@ -513,7 +440,6 @@ function startStage(stage) {
         startTimer();
     }, 2000);
 }
-
 function startTimer() {
     gameInterval = setInterval(() => {
         timeLeft -= 0.1;
@@ -524,23 +450,19 @@ function startTimer() {
         timerEl.innerText = `남은 시간: ${timeLeft.toFixed(1)}s`;
     }, 100);
 }
-
 function handleClick(cell) {
     if (!isGameActive || cell.classList.contains('revealed') || cell.classList.contains('correct') || cell.classList.contains('wrong')) {
         return;
     }
-
     const num = parseInt(cell.dataset.number);
     if (num === nextNumberToClick) {
         playSuccessSound();
-
         cell.classList.add('correct');
         cell.innerText = num;
         nextNumberToClick++;
-        totalScore++; // Keep updating for display purposes
+        totalScore++;
         clicksInCurrentStage++;
         scoreEl.innerText = `점수: ${totalScore}`;
-
         if (nextNumberToClick > (currentStage + 2)) {
             clearInterval(gameInterval);
             isGameActive = false;
@@ -552,7 +474,6 @@ function handleClick(cell) {
         endGame();
     }
 }
-
 function endGame() {
     clearInterval(gameInterval);
     isGameActive = false;
@@ -563,26 +484,20 @@ function endGame() {
             c.innerText = c.dataset.number;
         }
     });
-
     setTimeout(() => {
         if (totalScore > 0 && currentSessionId) {
             submitGameEnd(currentSessionId, currentStage, clicksInCurrentStage);
         } else {
             fetchLeaderboard();
         }
-
-        // Reset local state
         totalScore = 0;
         currentStage = 1;
         currentSessionId = null;
         clicksInCurrentStage = 0;
-
         stageEl.innerText = `스테이지: 1`;
         scoreEl.innerText = `점수: 0`;
         timerEl.innerText = `남은 시간: 10.0s`;
-
         blockGridContainer.innerHTML = '';
-
         if (mobileLayout) {
             gameWrapper.style.display = 'none';
             leaderboardWrapper.classList.add('is-visible');
@@ -596,14 +511,17 @@ function endGame() {
         }
     }, 500);
 }
-
 function submitGameEnd(sessionId, stage, clicks) {
     if (!isAuthenticated) {
         showModal('로그인 필요', `점수를 기록하려면 로그인해 주세요.`, showLoginModal);
         fetchLeaderboard();
         return;
     }
-
+    if (!sessionId) {
+        showModal('세션 오류', '게임 세션이 유효하지 않습니다. 다시 시작해주세요.', null);
+        fetchLeaderboard();
+        return;
+    }
     const switchToAllAndFetch = () => {
         const allTabBtn = document.querySelector('.tab-btn[data-tab="all"]');
         if (allTabBtn) {
@@ -612,7 +530,6 @@ function submitGameEnd(sessionId, stage, clicks) {
             fetchLeaderboard();
         }
     };
-
     fetch('/api/game/end', {
         method: 'POST',
         headers: {
@@ -630,26 +547,33 @@ function submitGameEnd(sessionId, stage, clicks) {
             if (response.ok) {
                 console.log('Game session ended successfully.');
                 showModal('게임 종료', `점수가 성공적으로 기록되었습니다.`, switchToAllAndFetch);
+            } else if (response.status === 401) {
+                showModal('인증 오류', '로그인이 만료되었습니다. 다시 로그인해주세요.', () => {
+                    isAuthenticated = false;
+                    updateUserStatusUI();
+                    switchToAllAndFetch();
+                });
             } else {
                 console.error('Game end submission failed:', response.status);
                 return response.text().then(text => {
-                    showModal('오류', `점수 기록 실패: ${text}`, switchToAllAndFetch);
+                    const errorMsg = text.includes('조작') || text.includes('cheating')
+                        ? '부정행위가 감지되었습니다.'
+                        : `점수 기록 실패: ${text}`;
+                    showModal('오류', errorMsg, switchToAllAndFetch);
                 });
             }
         })
         .catch(err => {
             console.error('Game end network error:', err);
-            showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', switchToAllAndFetch);
+            showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.', switchToAllAndFetch);
         });
 }
-
 function fetchLeaderboard(type = 'all') {
     const cacheBreaker = new Date().getTime();
     let url = `/api/leaderboard?t=${cacheBreaker}`;
     if (type === 'my') {
         url += '&filter=my';
     }
-
     fetch(url, {
         credentials: 'include',
         cache: 'no-store'
@@ -667,29 +591,22 @@ function fetchLeaderboard(type = 'all') {
         })
         .then(data => {
             if (!Array.isArray(data)) return;
-
             const ol = document.getElementById('leaderboard');
             ol.innerHTML = "";
-
             if (data.length === 0) {
                 ol.innerHTML = "<li>No scores yet!</li>";
                 return;
             }
-
             data.forEach(s => {
                 const scoreValue = s.scoreValue || s.score || 0;
                 const userName = s.user || s.name || s.email || 'Unknown User';
                 const provider = (s.provider || s.loginProvider || 'unknown').toLowerCase();
-
                 const li = document.createElement('li');
-
                 const userInfoDiv = document.createElement('div');
                 userInfoDiv.className = 'user-info-wrapper';
                 userInfoDiv.textContent = userName;
-
                 const scoreProviderDiv = document.createElement('div');
                 scoreProviderDiv.className = 'score-provider-wrapper';
-
                 let iconPath = '';
                 if (provider === 'google') {
                     iconPath = '../icons/logo_google.svg';
@@ -698,7 +615,6 @@ function fetchLeaderboard(type = 'all') {
                 } else if (provider === 'naver') {
                     iconPath = '../icons/logo_naver.svg';
                 }
-
                 if (iconPath) {
                     const iconImg = document.createElement('img');
                     iconImg.src = iconPath;
@@ -706,12 +622,10 @@ function fetchLeaderboard(type = 'all') {
                     iconImg.className = 'leaderboard-provider-icon';
                     scoreProviderDiv.appendChild(iconImg);
                 }
-
                 const scoreSpan = document.createElement('span');
                 scoreSpan.className = 'leaderboard-score';
                 scoreSpan.textContent = `${scoreValue} 점`;
                 scoreProviderDiv.appendChild(scoreSpan);
-
                 li.appendChild(userInfoDiv);
                 li.appendChild(scoreProviderDiv);
                 ol.appendChild(li);
@@ -723,7 +637,6 @@ function fetchLeaderboard(type = 'all') {
             ol.innerHTML = '<li>Error loading leaderboard.</li>';
         });
 }
-
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -731,7 +644,6 @@ function shuffleArray(array) {
     }
     return array;
 }
-
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -739,72 +651,54 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         fetchLeaderboard(btn.dataset.tab);
     });
 });
-
 function generateConnectedBlock(numBlocks, maxRows, maxCols) {
     const grid = Array(maxRows).fill(0).map(() => Array(maxCols).fill(false));
     const blockPositions = [];
     let startRow = Math.floor(Math.random() * Math.max(1, maxRows - 2)) + 1;
     let startCol = Math.floor(Math.random() * Math.max(1, maxCols - 2)) + 1;
-
     if (maxRows <= 0 || maxCols <= 0) return null;
-
     if (startRow >= maxRows) startRow = maxRows - 1;
     if (startCol >= maxCols) startCol = maxCols - 1;
     if (startRow < 0) startRow = 0;
     if (startCol < 0) startCol = 0;
-
     grid[startRow][startCol] = true;
     blockPositions.push({ row: startRow, col: startCol });
-
     const directions = [
         { dr: -1, dc: 0 }, { dr: 1, dc: 0 },
         { dr: 0, dc: -1 }, { dr: 0, dc: 1 }
     ];
-
     let attempts = 0;
     const maxAttempts = numBlocks * 10;
-
     while (blockPositions.length < numBlocks && attempts < maxAttempts) {
         attempts++;
         const randBlockIndex = Math.floor(Math.random() * blockPositions.length);
         const { row: currentRow, col: currentCol } = blockPositions[randBlockIndex];
-
         const shuffledDirections = shuffleArray([...directions]);
-
         for (const dir of shuffledDirections) {
             const newRow = currentRow + dir.dr;
             const newCol = currentCol + dir.dc;
-
             if (newRow >= 0 && newRow < maxRows &&
                 newCol >= 0 && newCol < maxCols &&
                 !grid[newRow][newCol]) {
-
                 grid[newRow][newCol] = true;
                 blockPositions.push({ row: newRow, col: newCol });
                 break;
             }
         }
     }
-
     if (blockPositions.length < numBlocks) {
         return null;
     }
-
     const minRow = Math.min(...blockPositions.map(p => p.row));
     const minCol = Math.min(...blockPositions.map(p => p.col));
-
     return blockPositions.map(p => ({
         row: p.row - minRow,
         col: p.col - minCol
     }));
 }
-
-
 function init() {
     checkLayoutMode();
-
     setupSocialLogin();
-
     checkLoginStatus()
         .then(() => {
             fetchLeaderboard();
@@ -815,9 +709,7 @@ function init() {
             console.error('Login status check failed, but fetching leaderboard anyway:', error);
         });
 }
-
 document.addEventListener('DOMContentLoaded', init);
-
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js')

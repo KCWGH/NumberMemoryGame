@@ -14,6 +14,7 @@ import com.memorygame.model.User;
 import com.memorygame.service.GameService;
 import com.memorygame.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -34,14 +35,8 @@ public class GameSessionController {
     }
 
     @PostMapping("/end")
-    public ResponseEntity<?> endGame(@RequestBody GameEndRequestDto request) {
-        try {
-            String result = gameService.endGame(request);
-            return ResponseEntity.ok(result);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<?> endGame(@Valid @RequestBody GameEndRequestDto request) {
+        String result = gameService.endGame(request);
+        return ResponseEntity.ok(result);
     }
 }

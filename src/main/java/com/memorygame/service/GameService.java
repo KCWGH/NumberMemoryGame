@@ -56,13 +56,21 @@ public class GameService {
 
         int calculatedScore = totalClicks;
 
+        // Calculate maximum possible score for the stage
+        int maxPossibleClicks = 0;
+        for (int i = 1; i <= request.getStage(); i++) {
+            maxPossibleClicks += (i + 2);
+        }
+
+        if (calculatedScore > maxPossibleClicks) {
+            throw new IllegalStateException("Score exceeds maximum possible for stage " + request.getStage());
+        }
+
         // Validation
         long durationMs = Duration.between(session.getStartTime(), session.getEndTime()).toMillis();
         long minDurationMs = totalClicks * MIN_TIME_PER_CLICK_MS;
 
         if (durationMs < minDurationMs) {
-            session.getStatus(); // Already set to COMPLETED, maybe mark as INVALID?
-            // For now, just throw exception
             throw new IllegalStateException("Game duration too short. Possible cheating detected.");
         }
 

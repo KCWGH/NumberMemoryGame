@@ -30,70 +30,72 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${cors.allowed-origin}")
-    private String allowedOrigin;
+        @Value("${cors.allowed-origin}")
+        private String allowedOrigin;
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+        private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
-    }
-
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName(null);
-
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(tokenRepository)
-                        .csrfTokenRequestHandler(requestHandler))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
-                        .requestMatchers("/index.html", "/style/**", "/js/**", "/manifest.json", "/icons/**",
-                                "/service-worker.js")
-                        .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/score").authenticated()
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .defaultSuccessUrl("/", true))
-                .logout(logout -> logout
-                        .logoutUrl("/api/logout")
-                        .logoutSuccessUrl("/")
-                        .permitAll())
-                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList(allowedOrigin));
-        configuration.setAllowedMethods(Collections.singletonList("*"));
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setAllowCredentials(true);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-
-    private static class CsrfCookieFilter extends OncePerRequestFilter {
-        @Override
-        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                FilterChain filterChain)
-                throws ServletException, IOException {
-            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
-            if (csrfToken != null) {
-                response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
-            }
-            filterChain.doFilter(request, response);
+        public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+                this.customOAuth2UserService = customOAuth2UserService;
         }
-    }
+
+        @Bean
+        SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+                CookieCsrfTokenRepository tokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+                CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+                requestHandler.setCsrfRequestAttributeName(null);
+
+                http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf
+                                                .csrfTokenRepository(tokenRepository)
+                                                .csrfTokenRequestHandler(requestHandler))
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/user").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/game/start").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/game/end").authenticated()
+                                                .requestMatchers("/index.html", "/style/**", "/js/**", "/manifest.json",
+                                                                "/icons/**",
+                                                                "/service-worker.js")
+                                                .permitAll()
+                                                .anyRequest().authenticated())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .userService(customOAuth2UserService))
+                                                .defaultSuccessUrl("/", true))
+                                .logout(logout -> logout
+                                                .logoutUrl("/api/logout")
+                                                .logoutSuccessUrl("/")
+                                                .permitAll())
+                                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+
+                return http.build();
+        }
+
+        @Bean
+        CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(Collections.singletonList(allowedOrigin));
+                configuration.setAllowedMethods(Collections.singletonList("*"));
+                configuration.setAllowedHeaders(Collections.singletonList("*"));
+                configuration.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
+
+        private static class CsrfCookieFilter extends OncePerRequestFilter {
+                @Override
+                protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                FilterChain filterChain)
+                                throws ServletException, IOException {
+                        CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+                        if (csrfToken != null) {
+                                response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+                        }
+                        filterChain.doFilter(request, response);
+                }
+        }
 }
