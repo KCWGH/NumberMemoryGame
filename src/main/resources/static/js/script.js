@@ -5,6 +5,8 @@ let mobileLayout = false;
 
 let isAuthenticated = false;
 let userProfile = null;
+let currentSessionId = null;
+let clicksInCurrentStage = 0;
 
 let audioContext;
 let currentFrequency;
@@ -402,15 +404,32 @@ startBtn.onclick = () => {
     if (!isGameActive) {
         initAudioContext();
 
-        startBtn.style.display = 'none';
-        startStage(1);
+        // Start game session on server
+        fetch('/api/game/start', {
+            method: 'POST',
+            headers: {
+                'X-XSRF-TOKEN': getCsrfToken()
+            },
+            credentials: 'include'
+        })
+            .then(res => res.json())
+            .then(data => {
+                currentSessionId = data.sessionId;
+                startBtn.style.display = 'none';
+                totalScore = 0; // Reset score for display
+                startStage(1);
 
-        if (mobileLayout) {
-            leaderboardWrapper.classList.remove('is-visible');
-            gameWrapper.style.display = 'flex';
-            leaderboardToggleBtn.innerText = '🏆';
-            restartBtn.style.display = 'none';
-        }
+                if (mobileLayout) {
+                    leaderboardWrapper.classList.remove('is-visible');
+                    gameWrapper.style.display = 'flex';
+                    leaderboardToggleBtn.innerText = '🏆';
+                    restartBtn.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error('Failed to start game session:', err);
+                showModal('오류', '게임을 시작할 수 없습니다. 다시 시도해주세요.', null);
+            });
     }
 };
 
@@ -418,6 +437,7 @@ function startStage(stage) {
     clearInterval(gameInterval);
     isGameActive = true;
     currentStage = stage;
+    clicksInCurrentStage = 0; // Reset clicks for new stage
     stageEl.innerText = `스테이지: ${currentStage}`;
     scoreEl.innerText = `점수: ${totalScore}`;
     blockGridContainer.innerHTML = '';
@@ -517,7 +537,8 @@ function handleClick(cell) {
         cell.classList.add('correct');
         cell.innerText = num;
         nextNumberToClick++;
-        totalScore++;
+        totalScore++; // Keep updating for display purposes
+        clicksInCurrentStage++;
         scoreEl.innerText = `점수: ${totalScore}`;
 
         if (nextNumberToClick > (currentStage + 2)) {
@@ -544,14 +565,18 @@ function endGame() {
     });
 
     setTimeout(() => {
-        if (totalScore > 0) {
-            submitScore(totalScore);
+        if (totalScore > 0 && currentSessionId) {
+            submitGameEnd(currentSessionId, currentStage, clicksInCurrentStage);
         } else {
             fetchLeaderboard();
         }
 
+        // Reset local state
         totalScore = 0;
         currentStage = 1;
+        currentSessionId = null;
+        clicksInCurrentStage = 0;
+
         stageEl.innerText = `스테이지: 1`;
         scoreEl.innerText = `점수: 0`;
         timerEl.innerText = `남은 시간: 10.0s`;
@@ -572,14 +597,12 @@ function endGame() {
     }, 500);
 }
 
-function submitScore(score) {
+function submitGameEnd(sessionId, stage, clicks) {
     if (!isAuthenticated) {
-        showModal('로그인 필요', `총 점수 ${score}점은 기록되지 않습니다.\n점수를 기록하려면 로그인해 주세요.`, showLoginModal);
+        showModal('로그인 필요', `점수를 기록하려면 로그인해 주세요.`, showLoginModal);
         fetchLeaderboard();
         return;
     }
-
-    const cacheBreaker = new Date().getTime();
 
     const switchToAllAndFetch = () => {
         const allTabBtn = document.querySelector('.tab-btn[data-tab="all"]');
@@ -590,34 +613,32 @@ function submitScore(score) {
         }
     };
 
-    fetch(`/api/score?t=${cacheBreaker}`, {
+    fetch('/api/game/end', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-XSRF-TOKEN': getCsrfToken()
         },
-        body: JSON.stringify({ score: score }),
-        credentials: 'include',
-        cache: 'no-store'
+        body: JSON.stringify({
+            sessionId: sessionId,
+            stage: stage,
+            clicksInCurrentStage: clicks
+        }),
+        credentials: 'include'
     })
         .then(response => {
             if (response.ok) {
-                console.log('Score submitted successfully.');
-                showModal('점수 기록 성공 🎉', `총 점수 ${score}점을 성공적으로 기록했습니다.`, switchToAllAndFetch);
-            } else if (response.status === 401) {
-                isAuthenticated = false;
-                updateUserStatusUI();
-                showModal('점수 기록 실패', '세션이 만료되었습니다. 다시 로그인해야 합니다.', switchToAllAndFetch);
-            } else if (response.status === 409 || response.status === 429 || response.status === 500) {
-                console.log('Duplicate score submission detected or server error.');
-                showModal('점수 기록 생략', `${score}점은 이미 기록된 점수입니다.\n 중복된 점수는 기록되지 않습니다.`, switchToAllAndFetch);
+                console.log('Game session ended successfully.');
+                showModal('게임 종료', `점수가 성공적으로 기록되었습니다.`, switchToAllAndFetch);
             } else {
-                console.error('Score submission failed with status:', response.status);
-                showModal('점수 기록 오류', `점수 기록 중 알 수 없는 오류가 발생했습니다 (Code: ${response.status}).`, switchToAllAndFetch);
+                console.error('Game end submission failed:', response.status);
+                return response.text().then(text => {
+                    showModal('오류', `점수 기록 실패: ${text}`, switchToAllAndFetch);
+                });
             }
         })
         .catch(err => {
-            console.error('Score submission network error:', err);
+            console.error('Game end network error:', err);
             showModal('네트워크 오류', '점수 기록 중 네트워크 오류가 발생했습니다.', switchToAllAndFetch);
         });
 }
@@ -660,6 +681,15 @@ function fetchLeaderboard(type = 'all') {
                 const userName = s.user || s.name || s.email || 'Unknown User';
                 const provider = (s.provider || s.loginProvider || 'unknown').toLowerCase();
 
+                const li = document.createElement('li');
+
+                const userInfoDiv = document.createElement('div');
+                userInfoDiv.className = 'user-info-wrapper';
+                userInfoDiv.textContent = userName;
+
+                const scoreProviderDiv = document.createElement('div');
+                scoreProviderDiv.className = 'score-provider-wrapper';
+
                 let iconPath = '';
                 if (provider === 'google') {
                     iconPath = '../icons/logo_google.svg';
@@ -669,18 +699,22 @@ function fetchLeaderboard(type = 'all') {
                     iconPath = '../icons/logo_naver.svg';
                 }
 
-                let iconHtml = iconPath ? `<img src="${iconPath}" alt="${provider}" class="leaderboard-provider-icon">` : '';
+                if (iconPath) {
+                    const iconImg = document.createElement('img');
+                    iconImg.src = iconPath;
+                    iconImg.alt = provider;
+                    iconImg.className = 'leaderboard-provider-icon';
+                    scoreProviderDiv.appendChild(iconImg);
+                }
 
-                const userInfoHtml = `<div class="user-info-wrapper">${userName}</div>`;
+                const scoreSpan = document.createElement('span');
+                scoreSpan.className = 'leaderboard-score';
+                scoreSpan.textContent = `${scoreValue} 점`;
+                scoreProviderDiv.appendChild(scoreSpan);
 
-                const scoreProviderHtml = `
-                <div class="score-provider-wrapper">
-                    ${iconHtml}
-                    <span class="leaderboard-score">${scoreValue} 점</span>
-                </div>
-            `;
-
-                ol.innerHTML += `<li>${userInfoHtml} ${scoreProviderHtml}</li>`;
+                li.appendChild(userInfoDiv);
+                li.appendChild(scoreProviderDiv);
+                ol.appendChild(li);
             });
         })
         .catch(err => {

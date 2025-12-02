@@ -7,6 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class ScoreSubmissionDto {
-    private int score;
+public class GameEndRequestDto {
+    private String sessionId;
+    private int stage;
+    private int clicksInCurrentStage;
 }

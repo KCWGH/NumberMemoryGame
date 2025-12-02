@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.memorygame.dto.ScoreResponseDto;
+import com.memorygame.dto.ScoreRecordDto;
 import com.memorygame.model.Score;
 import com.memorygame.model.User;
 import com.memorygame.repository.ScoreRepository;
@@ -42,18 +42,18 @@ public class ScoreService {
         }
     }
 
-    public List<ScoreResponseDto> getLeaderboard() {
+    public List<ScoreRecordDto> getLeaderboard() {
         return scoreRepository.findTop10ByOrderByScoreValueDesc(LocalDate.now().atStartOfDay()).stream()
-                .map(score -> new ScoreResponseDto(
+                .map(score -> new ScoreRecordDto(
                         score.getScoreValue(),
                         score.getUser().getName(),
                         score.getUser().getProvider().toString()))
                 .toList();
     }
 
-    public List<ScoreResponseDto> getMyScores(User user) {
+    public List<ScoreRecordDto> getMyScores(User user) {
         return scoreRepository.findByUserOrderByScoreValueDesc(user).stream()
-                .map(score -> new ScoreResponseDto(
+                .map(score -> new ScoreRecordDto(
                         score.getScoreValue(),
                         score.getUser().getName(),
                         score.getUser().getProvider().toString()))
