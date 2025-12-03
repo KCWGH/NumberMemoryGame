@@ -43,7 +43,7 @@ public class ScoreService {
     }
 
     public List<ScoreRecordDto> getLeaderboard() {
-        return scoreRepository.findTop10ByOrderByScoreValueDesc(LocalDate.now().atStartOfDay()).stream()
+        return scoreRepository.findTop10ByOrderByScoreValueDesc().stream()
                 .map(score -> new ScoreRecordDto(
                         score.getScoreValue(),
                         score.getUser().getName(),
@@ -63,6 +63,8 @@ public class ScoreService {
     @Transactional
     @Scheduled(cron = "0 0 0 * * *")
     public void deleteOldScores() {
-        scoreRepository.deleteByPlayedAtBefore(LocalDate.now().atStartOfDay());
+        java.time.LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        List<Score> oldScores = scoreRepository.findByPlayedAtBefore(startOfDay);
+        scoreRepository.deleteAll(oldScores);
     }
 }
