@@ -656,11 +656,24 @@ function shuffleArray(array) {
     }
     return array;
 }
+function createThrottle(delay) {
+    let lastExecutionTime = 0;
+    return function (callback) {
+        const now = Date.now();
+        if (now - lastExecutionTime >= delay) {
+            lastExecutionTime = now;
+            return callback();
+        }
+    };
+}
+const throttleLeaderboardFetch = createThrottle(1000);
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        fetchLeaderboard(btn.dataset.tab);
+        throttleLeaderboardFetch(() => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            fetchLeaderboard(btn.dataset.tab);
+        });
     });
 });
 function generateConnectedBlock(numBlocks, maxRows, maxCols) {
