@@ -1,4 +1,4 @@
-package com.memorygame.service;
+package com.memorygame.dto;
 
 import com.memorygame.model.ProviderType;
 import com.memorygame.model.User;

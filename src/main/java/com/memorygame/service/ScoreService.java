@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.memorygame.dto.ScoreRecordDto;
+import com.memorygame.exception.DuplicateScoreException;
 import com.memorygame.model.Score;
 import com.memorygame.model.User;
 import com.memorygame.repository.ScoreRepository;
@@ -31,7 +32,7 @@ public class ScoreService {
                     startOfDay, endOfDay);
 
             if (isDuplicate) {
-                throw new IllegalStateException("동일한 점수(" + scoreValue + ")가 오늘 이미 기록되어 있습니다.");
+                throw new DuplicateScoreException("동일한 점수(" + scoreValue + ")가 오늘 이미 기록되어 있습니다.");
             }
 
             Score score = Score.builder()
@@ -44,19 +45,13 @@ public class ScoreService {
 
     public List<ScoreRecordDto> getLeaderboard() {
         return scoreRepository.findTop10ByOrderByScoreValueDesc().stream()
-                .map(score -> new ScoreRecordDto(
-                        score.getScoreValue(),
-                        score.getUser().getName(),
-                        score.getUser().getProvider().toString()))
+                .map(ScoreRecordDto::from)
                 .toList();
     }
 
     public List<ScoreRecordDto> getMyScores(User user) {
         return scoreRepository.findByUserOrderByScoreValueDesc(user).stream()
-                .map(score -> new ScoreRecordDto(
-                        score.getScoreValue(),
-                        score.getUser().getName(),
-                        score.getUser().getProvider().toString()))
+                .map(ScoreRecordDto::from)
                 .toList();
     }
 

@@ -7,6 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.memorygame.dto.GameEndRequestDto;
 import com.memorygame.dto.GameStartResponseDto;
+import com.memorygame.exception.InvalidGameSessionException;
+import com.memorygame.exception.InvalidScoreException;
 import com.memorygame.model.GameSession;
 import com.memorygame.model.User;
 import com.memorygame.repository.GameSessionRepository;
@@ -33,10 +35,10 @@ public class GameService {
     @Transactional
     public String endGame(GameEndRequestDto request) {
         GameSession session = gameSessionRepository.findById(request.getSessionId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid session ID"));
+                .orElseThrow(() -> new InvalidGameSessionException("Invalid session ID"));
 
         if (session.getStatus() != GameSession.SessionStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Session is not in progress");
+            throw new InvalidGameSessionException("Session is not in progress");
         }
 
         session.endSession();
@@ -63,7 +65,7 @@ public class GameService {
         }
 
         if (calculatedScore > maxPossibleClicks) {
-            throw new IllegalStateException("Score exceeds maximum possible for stage " + request.getStage());
+            throw new InvalidScoreException("Score exceeds maximum possible for stage " + request.getStage());
         }
 
         // Validation
@@ -71,7 +73,7 @@ public class GameService {
         long minDurationMs = totalClicks * MIN_TIME_PER_CLICK_MS;
 
         if (durationMs < minDurationMs) {
-            throw new IllegalStateException("Game duration too short. Possible cheating detected.");
+            throw new InvalidScoreException("Game duration too short. Possible cheating detected.");
         }
 
         if (session.getUser() != null) {

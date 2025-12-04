@@ -3,6 +3,8 @@ package com.memorygame.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import com.memorygame.model.User;
+
 @Getter
 @Builder
 public class UserResponseDto {
@@ -10,4 +12,13 @@ public class UserResponseDto {
     private String name;
     private String email;
     private String provider;
+
+    public static UserResponseDto from(User user) {
+        return UserResponseDto.builder()
+                .authenticated(true)
+                .name(user.getName())
+                .email(user.getEmail())
+                .provider(user.getProvider().toString())
+                .build();
+    }
 }

@@ -10,11 +10,39 @@ import com.memorygame.dto.ErrorResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
+    @ExceptionHandler(InvalidGameSessionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidGameSessionException(InvalidGameSessionException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage(), "INVALID_SESSION"));
+    }
+
+    @ExceptionHandler(InvalidScoreException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidScoreException(InvalidScoreException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse(e.getMessage(), "INVALID_SCORE"));
+    }
+
+    @ExceptionHandler(DuplicateScoreException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateScoreException(DuplicateScoreException e) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(new ErrorResponse(e.getMessage(), "CONFLICT"));
+                .body(new ErrorResponse(e.getMessage(), "DUPLICATE_SCORE"));
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException e) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(e.getMessage(), "USER_NOT_FOUND"));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitExceededException(RateLimitExceededException e) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(new ErrorResponse(e.getMessage(), "TOO_MANY_REQUESTS"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -24,11 +52,11 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(e.getMessage(), "BAD_REQUEST"));
     }
 
-    @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimitExceededException(RateLimitExceededException e) {
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException e) {
         return ResponseEntity
-                .status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(new ErrorResponse(e.getMessage(), "TOO_MANY_REQUESTS"));
+                .status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(e.getMessage(), "CONFLICT"));
     }
 
     @ExceptionHandler(Exception.class)

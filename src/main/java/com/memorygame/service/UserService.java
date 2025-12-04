@@ -6,6 +6,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import com.memorygame.dto.UserResponseDto;
+import com.memorygame.exception.UserNotFoundException;
 import com.memorygame.model.ProviderType;
 import com.memorygame.model.User;
 import com.memorygame.repository.UserRepository;
@@ -29,7 +30,7 @@ public class UserService {
         String providerId = oauth2User.getName();
 
         return userRepository.findByProviderAndProviderId(providerType, providerId)
-                .orElseThrow(() -> new IllegalStateException("인증된 사용자를 DB에서 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("인증된 사용자를 DB에서 찾을 수 없습니다."));
     }
 
     /**
@@ -45,12 +46,7 @@ public class UserService {
         try {
             User user = getUserFromOAuth2User(oauth2User);
 
-            return UserResponseDto.builder()
-                    .authenticated(true)
-                    .name(user.getName())
-                    .email(user.getEmail())
-                    .provider(user.getProvider().toString())
-                    .build();
+            return UserResponseDto.from(user);
 
         } catch (Exception e) {
             String name = oauth2User.getAttribute("name");
