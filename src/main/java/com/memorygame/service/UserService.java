@@ -52,13 +52,16 @@ public class UserService {
             String name = oauth2User.getAttribute("name");
             String email = oauth2User.getAttribute("email");
 
-            if (name == null && email == null) {
-                name = "인증된 사용자";
+            String id = "unknown";
+            if (email != null) {
+                id = email.split("@")[0];
+            } else if (name != null) {
+                id = name;
             }
 
             return UserResponseDto.builder()
                     .authenticated(true)
-                    .name(name != null ? name : email)
+                    .id(id)
                     .email(email)
                     .provider("UNKNOWN")
                     .build();

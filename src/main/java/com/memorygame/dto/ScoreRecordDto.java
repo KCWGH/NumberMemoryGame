@@ -9,7 +9,7 @@ import com.memorygame.model.Score;
 @RequiredArgsConstructor
 public class ScoreRecordDto {
     private final int scoreValue;
-    private final String user;
+    private final String id;
     private final String provider;
 
     public static ScoreRecordDto from(Score score) {

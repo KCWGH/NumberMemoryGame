@@ -49,11 +49,13 @@ public class OAuthAttributes {
     }
 
     private static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes) {
+        String email = (String) attributes.get("email");
+        String nickname = email.split("@")[0];
         return OAuthAttributes.builder()
                 .nameAttributeKey(userNameAttributeName)
                 .providerId((String) attributes.get(userNameAttributeName))
-                .name((String) attributes.get("name"))
-                .email((String) attributes.get("email"))
+                .name(nickname)
+                .email(email)
                 .providerType(ProviderType.GOOGLE)
                 .attributes(attributes)
                 .build();
@@ -61,31 +63,31 @@ public class OAuthAttributes {
 
     @SuppressWarnings("unchecked")
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
-        // 네이버는 "response" 키 아래에 실제 사용자 정보가 있음
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
+        String email = (String) response.get("email");
+        String nickname = email.split("@")[0];
 
         return OAuthAttributes.builder()
-                .nameAttributeKey("id") // 네이버는 id가 고유 식별자
+                .nameAttributeKey("id")
                 .providerId((String) response.get("id"))
-                .name((String) response.get("name"))
-                .email((String) response.get("email"))
+                .name(nickname)
+                .email(email)
                 .providerType(ProviderType.NAVER)
-                .attributes(response) // response를 attributes로 사용 (flattening)
+                .attributes(response)
                 .build();
     }
 
     @SuppressWarnings("unchecked")
     private static OAuthAttributes ofKakao(String userNameAttributeName, Map<String, Object> attributes) {
-        // 카카오는 "kakao_account" 아래에 이메일, "properties" 아래에 닉네임이 있음
         Map<String, Object> kakaoAccount = (Map<String, Object>) attributes.get("kakao_account");
-        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+        String email = (String) kakaoAccount.get("email");
+        String nickname = email.split("@")[0];
 
         return OAuthAttributes.builder()
                 .nameAttributeKey(userNameAttributeName)
-                .providerId(String.valueOf(attributes.get(userNameAttributeName))) // 카카오 ID (Number 타입일 수 있어 String으로
-                                                                                   // 변환)
-                .name((String) profile.get("nickname"))
-                .email((String) kakaoAccount.get("email"))
+                .providerId(String.valueOf(attributes.get(userNameAttributeName)))
+                .name(nickname)
+                .email(email)
                 .providerType(ProviderType.KAKAO)
                 .attributes(attributes)
                 .build();

@@ -287,7 +287,7 @@ function checkLoginStatus() {
 function updateUserStatusUI(user = null) {
     userStatusContainer.innerHTML = '';
     if (user && isAuthenticated) {
-        const userName = user.name || user.email || '사용자';
+        const userName = user.id || '사용자';
         const provider = user.provider ? user.provider.toLowerCase() : 'unknown';
         let iconHtml = '';
         let iconPath = '';
@@ -611,7 +611,7 @@ function fetchLeaderboard(type = 'all') {
             }
             data.forEach(s => {
                 const scoreValue = s.scoreValue || s.score || 0;
-                const userName = s.user || s.name || s.email || 'Unknown User';
+                const userName = s.id || 'Unknown User';
                 const provider = (s.provider || s.loginProvider || 'unknown').toLowerCase();
                 const li = document.createElement('li');
                 const userInfoDiv = document.createElement('div');

@@ -9,14 +9,14 @@ import com.memorygame.model.User;
 @Builder
 public class UserResponseDto {
     private boolean authenticated;
-    private String name;
+    private String id;
     private String email;
     private String provider;
 
     public static UserResponseDto from(User user) {
         return UserResponseDto.builder()
                 .authenticated(true)
-                .name(user.getName())
+                .id(user.getName())
                 .email(user.getEmail())
                 .provider(user.getProvider().toString())
                 .build();
