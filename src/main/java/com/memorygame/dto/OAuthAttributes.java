@@ -65,7 +65,19 @@ public class OAuthAttributes {
     private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         String email = (String) response.get("email");
-        String nickname = email.split("@")[0];
+        String nickname;
+
+        if (email != null && email.contains("@")) {
+            nickname = email.split("@")[0];
+        } else {
+            if (response.get("nickname") != null) {
+                nickname = (String) response.get("nickname");
+            } else if (response.get("name") != null) {
+                nickname = (String) response.get("name");
+            } else {
+                nickname = (String) response.get("id");
+            }
+        }
 
         return OAuthAttributes.builder()
                 .nameAttributeKey("id")
