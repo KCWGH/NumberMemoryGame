@@ -99,7 +99,7 @@ public class SecurityConfig {
                                 throws ServletException, IOException {
                         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
                         if (csrfToken != null) {
-                                response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+                                csrfToken.getToken();
                         }
                         filterChain.doFilter(request, response);
                 }
@@ -130,12 +130,10 @@ public class SecurityConfig {
                 }
 
                 private String getIdentifier(HttpServletRequest request) {
-                        // Try to get authenticated user ID first
                         if (request.getUserPrincipal() != null) {
                                 return "user:" + request.getUserPrincipal().getName();
                         }
 
-                        // Fall back to IP address
                         String ip = request.getHeader("X-Forwarded-For");
                         if (ip == null || ip.isEmpty()) {
                                 ip = request.getRemoteAddr();
