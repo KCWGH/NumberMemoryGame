@@ -1,6 +1,10 @@
 package com.memorygame.service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,11 +29,18 @@ public class ScoreService {
     @Transactional
     public void saveScore(User user, int scoreValue) {
         if (user != null && scoreValue > 0) {
-            java.time.LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-            java.time.LocalDateTime endOfDay = LocalDate.now().atTime(java.time.LocalTime.MAX);
+            ZoneId kstZone = ZoneId.of("Asia/Seoul");
+            ZonedDateTime nowKst = ZonedDateTime.now(kstZone);
+
+            ZonedDateTime startOfDayKst = nowKst.toLocalDate().atStartOfDay(kstZone);
+            ZonedDateTime endOfDayKst = nowKst.toLocalDate().atTime(LocalTime.MAX).atZone(kstZone);
+
+            LocalDateTime startOfDaySystem = startOfDayKst.withZoneSameInstant(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            LocalDateTime endOfDaySystem = endOfDayKst.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
 
             boolean isDuplicate = scoreRepository.existsByUserAndScoreValueAndPlayedAtBetween(user, scoreValue,
-                    startOfDay, endOfDay);
+                    startOfDaySystem, endOfDaySystem);
 
             if (isDuplicate) {
                 throw new DuplicateScoreException("동일한 점수(" + scoreValue + ")가 오늘 이미 기록되어 있습니다.");
@@ -56,10 +67,14 @@ public class ScoreService {
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void deleteOldScores() {
-        java.time.LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        List<Score> oldScores = scoreRepository.findByPlayedAtBefore(startOfDay);
+        ZoneId kstZone = ZoneId.of("Asia/Seoul");
+        ZonedDateTime startOfDayKst = LocalDate.now(kstZone).atStartOfDay(kstZone);
+
+        LocalDateTime startOfDaySystem = startOfDayKst.withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime();
+
+        List<Score> oldScores = scoreRepository.findByPlayedAtBefore(startOfDaySystem);
         scoreRepository.deleteAll(oldScores);
     }
 }
