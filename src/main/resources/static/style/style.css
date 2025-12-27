@@ -162,58 +162,71 @@ h1 {
 }
 
 #loginBtn,
-#logoutBtn {
+.auth-pill {
     background: var(--card-bg);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid var(--border-color);
-    padding: 0.6rem 1.2rem;
     border-radius: 12px;
-    color: var(--text-color);
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
     box-shadow: var(--shadow);
     transition: all 0.3s ease;
 }
 
-#loginBtn:hover,
-#logoutBtn:hover {
+#loginBtn {
+    padding: 0.6rem 1.2rem;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.auth-pill {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+}
+
+#loginBtn:hover {
     background: rgba(var(--primary-rgb), 0.1);
-    /* Subtle primary tint */
-    border-color: var(--primary);
     color: var(--primary);
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
 }
 
-.combined-auth-btn {
-    display: flex;
-    align-items: center;
-    padding: 0 !important;
-    overflow: hidden;
-}
-
-.user-info-part {
+#userInfoDisplay {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.6rem 1rem;
-    height: 100%;
+    color: var(--text-color);
 }
 
-.logout-text {
-    padding: 0.6rem 1rem;
-    font-weight: 700;
-}
-
-.v-divider {
+.auth-divider {
     width: 1px;
-    height: 1.2rem;
-    background-color: var(--border-color);
-    opacity: 0.5;
+    height: 1.5rem;
+    background: var(--border-color);
+    flex-shrink: 0;
 }
 
+#logoutBtn {
+    background: transparent;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#logoutBtn:hover {
+    background: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary);
+}
+
+/* Removed redundant #userInfoDisplay PC style */
 
 #theme-toggle {
     position: fixed;
@@ -726,16 +739,22 @@ body.dark-mode #theme-toggle .icon.moon {
         font-size: 1.25rem;
     }
 
-    #logoutBtn {
-        display: flex !important;
+    #logoutBtn,
+    .auth-divider {
+        display: none !important;
     }
 
-    .v-divider,
-    .logout-text {
-        display: none;
+    .auth-pill {
+        border-radius: 12px;
     }
 
-    #logoutBtn:active {
+    #userInfoDisplay {
+        cursor: pointer;
+        padding: 0.5rem 0.8rem;
+        transition: transform 0.2s;
+    }
+
+    #userInfoDisplay:active {
         transform: scale(0.95);
         background: rgba(var(--primary-rgb), 0.05);
     }
