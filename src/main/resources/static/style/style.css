@@ -179,10 +179,12 @@ h1 {
 
 #loginBtn:hover,
 #logoutBtn:hover {
-    background: var(--primary);
-    color: white;
+    background: rgba(var(--primary-rgb), 0.1);
+    /* Subtle primary tint */
+    border-color: var(--primary);
+    color: var(--primary);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
+    box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
 }
 
 #userInfoDisplay {
