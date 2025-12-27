@@ -168,10 +168,12 @@ export function handleResponsive() {
 
     if (isMobile) {
         elements.leaderboardToggleBtn.style.display = 'flex';
-        // Note: Logic for showing/hiding wrappers should be handled by state in script.js
     } else {
         elements.leaderboardToggleBtn.style.display = 'none';
-        elements.leaderboardWrapper.classList.add('is-visible');
+        // Reset styles for PC version
+        elements.leaderboardWrapper.style.display = 'flex';
         elements.gameWrapper.style.display = 'flex';
+        elements.leaderboardWrapper.classList.add('is-visible');
+        elements.startBtn.style.display = 'block';
     }
 }
