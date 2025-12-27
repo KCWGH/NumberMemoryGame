@@ -96,25 +96,18 @@ export function updateAuthUI(user, onLogin, onLogout) {
         let iconPath = `/icons/logo_${provider}.svg`;
 
         elements.userStatusContainer.innerHTML = `
-            <span id="userInfoDisplay">
-                <img src="${iconPath}" alt="${provider}" class="provider-icon"> ${userName}님
-            </span>
-            <button id="logoutBtn">로그아웃</button>
+            <button id="logoutBtn" class="combined-auth-btn">
+                <span class="user-info-part">
+                    <img src="${iconPath}" alt="${provider}" class="provider-icon">
+                    <span class="user-name">${userName}님</span>
+                </span>
+                <span class="v-divider"></span>
+                <span class="logout-text">로그아웃</span>
+            </button>
         `;
 
-        const userInfo = document.getElementById('userInfoDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
-
-        // Handle logout button click (Visible on PC)
         logoutBtn.addEventListener('click', onLogout);
-
-        // Handle username click (Actionable on Mobile)
-        userInfo.addEventListener('click', () => {
-            const isMobile = window.innerWidth < BREAKPOINT_MOBILE;
-            if (isMobile) {
-                showModal("로그아웃", "로그아웃 하시겠습니까?", onLogout);
-            }
-        });
     } else {
         elements.userStatusContainer.innerHTML = `<button id="loginBtn">로그인</button>`;
         document.getElementById('loginBtn').addEventListener('click', onLogin);

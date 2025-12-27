@@ -187,19 +187,33 @@ h1 {
     box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.15);
 }
 
-#userInfoDisplay {
-    background: var(--card-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 600;
+.combined-auth-btn {
+    display: flex;
+    align-items: center;
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.user-info-part {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    transition: background-color 0.5s ease, border-color 0.5s ease;
+    padding: 0.6rem 1rem;
+    height: 100%;
 }
+
+.logout-text {
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+}
+
+.v-divider {
+    width: 1px;
+    height: 1.2rem;
+    background-color: var(--border-color);
+    opacity: 0.5;
+}
+
 
 #theme-toggle {
     position: fixed;
@@ -713,19 +727,15 @@ body.dark-mode #theme-toggle .icon.moon {
     }
 
     #logoutBtn {
-        display: none !important;
+        display: flex !important;
     }
 
-    #userInfoDisplay {
-        cursor: pointer;
-        padding: 0.5rem 0.8rem;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        transition: transform 0.2s;
+    .v-divider,
+    .logout-text {
+        display: none;
     }
 
-    #userInfoDisplay:active {
+    #logoutBtn:active {
         transform: scale(0.95);
         background: rgba(var(--primary-rgb), 0.05);
     }
