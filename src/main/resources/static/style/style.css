@@ -443,6 +443,15 @@ body.dark-mode #theme-toggle .icon.moon {
     white-space: nowrap;
 }
 
+#userInfoDisplay {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    font-weight: 600;
+}
+
 .score-provider-wrapper {
     display: flex;
     align-items: center;
@@ -702,4 +711,24 @@ body.dark-mode #theme-toggle .icon.moon {
         height: 65px;
         font-size: 1.25rem;
     }
+
+    #logoutBtn {
+        display: none !important;
+    }
+
+    #userInfoDisplay {
+        cursor: pointer;
+        padding: 0.5rem 0.8rem;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+
+    #userInfoDisplay:active {
+        transform: scale(0.95);
+        background: rgba(var(--primary-rgb), 0.05);
+    }
 }
+
+```

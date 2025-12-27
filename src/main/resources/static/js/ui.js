@@ -101,7 +101,20 @@ export function updateAuthUI(user, onLogin, onLogout) {
             </span>
             <button id="logoutBtn">로그아웃</button>
         `;
-        document.getElementById('logoutBtn').addEventListener('click', onLogout);
+
+        const userInfo = document.getElementById('userInfoDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Handle logout button click (Visible on PC)
+        logoutBtn.addEventListener('click', onLogout);
+
+        // Handle username click (Actionable on Mobile)
+        userInfo.addEventListener('click', () => {
+            const isMobile = window.innerWidth < BREAKPOINT_MOBILE;
+            if (isMobile) {
+                showModal("로그아웃", "로그아웃 하시겠습니까?", onLogout);
+            }
+        });
     } else {
         elements.userStatusContainer.innerHTML = `<button id="loginBtn">로그인</button>`;
         document.getElementById('loginBtn').addEventListener('click', onLogin);
