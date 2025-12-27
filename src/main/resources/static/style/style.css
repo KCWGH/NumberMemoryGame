@@ -684,8 +684,8 @@ body.dark-mode #theme-toggle .icon.moon {
 @media (max-width: 900px) {
     body {
         justify-content: flex-start;
-        padding-top: 3.5rem;
-        /* Reduced from 5rem */
+        padding-top: 5rem;
+        /* Increased from 3.5rem to widen gap from top buttons */
         height: auto;
     }
 
