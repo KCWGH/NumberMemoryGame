@@ -4,8 +4,8 @@
   "description": "구글 로그인으로 점수를 기록하는 간단한 숫자 기억 게임",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff", 
-  "theme_color": "#f0f4f8", 
+  "background_color": "#f0fdfa",
+  "theme_color": "#f0fdfa",
   "orientation": "portrait-primary",
   "icons": [
     {

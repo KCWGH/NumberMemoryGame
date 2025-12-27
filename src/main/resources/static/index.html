@@ -5,9 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>숫자 기억 게임</title>
-    <meta name="theme-color" content="#f0f4f8" id="theme-color-meta">
+    <meta name="theme-color" content="#f0fdfa" id="theme-color-meta">
     <link rel="icon" href="/icons/favicon.ico" type="image/x-icon">
     <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style/style.css">
 </head>
 
@@ -26,29 +29,28 @@
         <span class="icon moon">🌙</span>
     </div>
 
-    <h1>숫자 기억 게임</h1>
     <div id="mainContent">
-        <div id="gameWrapper">
+        <h1>숫자 기억 게임</h1>
+        <div id="gameWrapper" class="glass-card">
             <div id="infoContainer">
                 <div id="stage">스테이지: 1</div>
                 <div id="score">점수: 0</div>
             </div>
-            <button id="startBtn">게임 시작</button>
             <div id="blockGridContainer">
-
             </div>
+            <button id="startBtn">게임 시작</button>
             <div id="timerDisplay">남은 시간: 10.0s</div>
         </div>
 
-        <div id="leaderboardWrapper">
+        <div id="leaderboardWrapper" class="glass-card">
             <h2>순위표 👑</h2>
             <div class="leaderboard-tabs">
                 <button class="tab-btn active" data-tab="all">전체 순위</button>
                 <button class="tab-btn" data-tab="my">나의 기록</button>
             </div>
             <ol id="leaderboard"></ol>
+            <button id="restartBtn" style="display: none;">돌아가기</button>
         </div>
-        <button id="restartBtn" style="display: none;">돌아가기</button>
     </div>
 
     <div id="modalOverlay" class="modal-overlay">
@@ -76,7 +78,7 @@
             </div>
         </div>
     </div>
-    <script src="js/script.js"></script>
+    <script type="module" src="js/script.js"></script>
 
 </body>
 
