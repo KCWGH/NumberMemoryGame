@@ -15,7 +15,12 @@ let gameState = {
     clicksInCurrentStage: 0,
     isAuthenticated: false,
     userProfile: null,
-    numbersToFind: []
+    numbersToFind: [],
+    isLeaderboardLoading: false,
+    lastLeaderboardFetch: {
+        all: 0,
+        my: 0
+    }
 };
 
 // --- Core Game Logic ---
@@ -185,15 +190,33 @@ async function handleGameSubmission() {
 }
 
 async function refreshLeaderboard(type = 'all') {
+    const now = Date.now();
+    const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'all';
+
+    // 1. Prevent concurrent requests
+    if (gameState.isLeaderboardLoading) return;
+
+    // 2. Throttle active tab refresh (3 seconds)
+    if (type === currentTab && now - gameState.lastLeaderboardFetch[type] < 3000) {
+        return;
+    }
+
     try {
+        gameState.isLeaderboardLoading = true;
+        ui.setLeaderboardLoading(true);
+
         const data = await api.fetchLeaderboardData(type);
         ui.updateLeaderboardUI(data);
+        gameState.lastLeaderboardFetch[type] = Date.now();
     } catch (err) {
         if (err.status === 401 && type === 'my') {
             ui.showModal('로그인 필요', '나의 기록을 보려면 로그인이 필요합니다.', () => {
                 ui.showLoginOptions(provider => window.location.href = SOCIAL_LOGIN_URLS[provider]);
             });
         }
+    } finally {
+        gameState.isLeaderboardLoading = false;
+        ui.setLeaderboardLoading(false);
     }
 }
 
@@ -216,9 +239,16 @@ function setupEventListeners() {
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            if (gameState.isLeaderboardLoading) return;
+
+            const targetTab = btn.dataset.tab;
+            const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab;
+
+            // Update UI immediately for active state
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            refreshLeaderboard(btn.dataset.tab);
+
+            refreshLeaderboard(targetTab);
         });
     });
 

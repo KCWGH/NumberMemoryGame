@@ -124,6 +124,15 @@ export function updateAuthUI(user, onLogin, onLogout) {
     }
 }
 
+export function setLeaderboardLoading(isLoading) {
+    const ol = elements.leaderboardList;
+    if (isLoading) {
+        // Only show loading if it's currently empty or we want to indicate refresh
+        // For a smoother experience, we can just prepend or replace with a loading shimmer/text
+        ol.innerHTML = "<li class='loading-state'>데이터를 불러오는 중...</li>";
+    }
+}
+
 export function updateLeaderboardUI(data) {
     const ol = elements.leaderboardList;
     ol.innerHTML = "";
