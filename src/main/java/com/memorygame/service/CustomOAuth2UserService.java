@@ -46,9 +46,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                                 attributes.getNameAttributeKey());
         }
 
-        /**
-         * Finds user by ProviderType and ProviderId, or creates new user if not found.
-         */
         private User saveOrUpdate(OAuthAttributes attributes) {
                 User user = userRepository
                                 .findByProviderAndProviderId(attributes.getProviderType(), attributes.getProviderId())

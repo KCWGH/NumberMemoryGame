@@ -8,9 +8,6 @@ import com.memorygame.model.User;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * OAuth2 서비스별 응답 데이터를 파싱하여 통합된 형태로 저장하는 클래스
- */
 @Getter
 public class OAuthAttributes {
     private final Map<String, Object> attributes;
@@ -31,7 +28,6 @@ public class OAuthAttributes {
         this.providerType = providerType;
     }
 
-    // ProviderType에 따라 적절한 of() 메서드를 호출하여 속성 파싱
     public static OAuthAttributes of(ProviderType providerType,
             String userNameAttributeName,
             Map<String, Object> attributes) {
@@ -43,7 +39,6 @@ public class OAuthAttributes {
                 return ofKakao(userNameAttributeName, attributes);
             case GOOGLE:
             default:
-                // Apple 로그인은 별도 JWT 처리가 필요하나, Google과 유사한 필드 추출 방식을 사용한다고 가정
                 return ofGoogle(userNameAttributeName, attributes);
         }
     }
@@ -66,26 +61,24 @@ public class OAuthAttributes {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         String email = (String) response.get("email");
         String providerId = (String) response.get("id");
-        String nickname;
+        String nickname = (String) response.get("nickname");
 
-        // Prioritize email prefix or provider ID as "User ID"
+        String displayName;
+
         if (email != null && email.contains("@")) {
-            nickname = email.split("@")[0];
+            displayName = email.split("@")[0];
+        } else if (nickname != null && !nickname.isBlank()) {
+            displayName = nickname;
         } else {
-            // If email is missing, use the first half of provider ID or a nickname if exists
-            if (response.get("nickname") != null) {
-                nickname = (String) response.get("nickname");
-            } else {
-                nickname = (providerId != null && providerId.length() > 8)
-                        ? providerId.substring(0, 8)
-                        : providerId;
-            }
+            displayName = (providerId != null && providerId.length() > 8)
+                    ? providerId.substring(0, 8)
+                    : providerId;
         }
 
         return OAuthAttributes.builder()
                 .nameAttributeKey("id")
                 .providerId(providerId)
-                .name(nickname)
+                .name(displayName)
                 .email(email)
                 .providerType(ProviderType.NAVER)
                 .attributes(response)
@@ -108,7 +101,6 @@ public class OAuthAttributes {
                 .build();
     }
 
-    // User 엔티티 생성을 위한 메서드
     public User toEntity() {
         return User.builder()
                 .provider(providerType)

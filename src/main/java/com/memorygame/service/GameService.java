@@ -22,7 +22,6 @@ public class GameService {
     private final GameSessionRepository gameSessionRepository;
     private final ScoreService scoreService;
 
-    // Minimum time per click in milliseconds (e.g., 200ms)
     private static final long MIN_TIME_PER_CLICK_MS = 200;
 
     @Transactional
@@ -43,12 +42,7 @@ public class GameService {
 
         session.endSession();
 
-        // Calculate total score
-        // Score logic: (stage - 1) * (stage + 2) / 2 + clicksInCurrentStage
-        // Or simply: sum of numbers from 1 to (stage-1) + clicksInCurrentStage
-        // Let's assume the frontend logic: totalScore accumulates 1 point per correct
-        // click.
-        // Total clicks = sum of (i + 2) for i = 1 to (stage - 1) + clicksInCurrentStage
+
 
         int totalClicks = 0;
         for (int i = 1; i < request.getStage(); i++) {
@@ -58,7 +52,7 @@ public class GameService {
 
         int calculatedScore = totalClicks;
 
-        // Calculate maximum possible score for the stage
+
         int maxPossibleClicks = 0;
         for (int i = 1; i <= request.getStage(); i++) {
             maxPossibleClicks += (i + 2);
@@ -67,8 +61,6 @@ public class GameService {
         if (calculatedScore > maxPossibleClicks) {
             throw new InvalidScoreException("Score exceeds maximum possible for stage " + request.getStage());
         }
-
-        // Validation
         long durationMs = Duration.between(session.getStartTime(), session.getEndTime()).toMillis();
         long minDurationMs = totalClicks * MIN_TIME_PER_CLICK_MS;
 
