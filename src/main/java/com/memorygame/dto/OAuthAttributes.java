@@ -1,9 +1,9 @@
 package com.memorygame.dto;
 
+import java.util.Map;
+
 import com.memorygame.model.ProviderType;
 import com.memorygame.model.User;
-
-import java.util.Map;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -38,7 +38,7 @@ public class OAuthAttributes {
 
         switch (providerType) {
             case NAVER:
-                return ofNaver(userNameAttributeName, attributes);
+                return ofNaver(attributes);
             case KAKAO:
                 return ofKakao(userNameAttributeName, attributes);
             case GOOGLE:
@@ -62,26 +62,29 @@ public class OAuthAttributes {
     }
 
     @SuppressWarnings("unchecked")
-    private static OAuthAttributes ofNaver(String userNameAttributeName, Map<String, Object> attributes) {
+    private static OAuthAttributes ofNaver(Map<String, Object> attributes) {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
         String email = (String) response.get("email");
+        String providerId = (String) response.get("id");
         String nickname;
 
+        // Prioritize email prefix or provider ID as "User ID"
         if (email != null && email.contains("@")) {
             nickname = email.split("@")[0];
         } else {
+            // If email is missing, use the first half of provider ID or a nickname if exists
             if (response.get("nickname") != null) {
                 nickname = (String) response.get("nickname");
-            } else if (response.get("name") != null) {
-                nickname = (String) response.get("name");
             } else {
-                nickname = (String) response.get("id");
+                nickname = (providerId != null && providerId.length() > 8)
+                        ? providerId.substring(0, 8)
+                        : providerId;
             }
         }
 
         return OAuthAttributes.builder()
                 .nameAttributeKey("id")
-                .providerId((String) response.get("id"))
+                .providerId(providerId)
                 .name(nickname)
                 .email(email)
                 .providerType(ProviderType.NAVER)
