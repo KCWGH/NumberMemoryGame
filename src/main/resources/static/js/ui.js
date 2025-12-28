@@ -127,10 +127,37 @@ export function updateAuthUI(user, onLogin, onLogout) {
 export function setLeaderboardLoading(isLoading) {
     const ol = elements.leaderboardList;
     if (isLoading) {
-        // Only show loading if it's currently empty or we want to indicate refresh
-        // For a smoother experience, we can just prepend or replace with a loading shimmer/text
-        ol.innerHTML = "<li class='loading-state'>데이터를 불러오는 중...</li>";
+        ol.innerHTML = `
+            <div class="leaderboard-loader">
+                <div class="spinner"></div>
+                <span>데이터를 불러오는 중...</span>
+            </div>
+        `;
     }
+}
+
+export function setLeaderboardCooldown(isInCooldown, remainingMs = 3000) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    const remainingSec = (remainingMs / 1000).toFixed(1);
+
+    tabs.forEach(tab => {
+        if (isInCooldown) {
+            tab.classList.add('cooldown');
+            // Remove existing message if any
+            const existingMsg = tab.querySelector('.cooldown-msg');
+            if (existingMsg) existingMsg.remove();
+
+            // Add hover message
+            const msg = document.createElement('span');
+            msg.classList.add('cooldown-msg');
+            msg.innerText = `${remainingSec}초 후에 가능합니다`;
+            tab.appendChild(msg);
+        } else {
+            tab.classList.remove('cooldown');
+            const msg = tab.querySelector('.cooldown-msg');
+            if (msg) msg.remove();
+        }
+    });
 }
 
 export function updateLeaderboardUI(data) {

@@ -17,10 +17,8 @@ let gameState = {
     userProfile: null,
     numbersToFind: [],
     isLeaderboardLoading: false,
-    lastLeaderboardFetch: {
-        all: 0,
-        my: 0
-    }
+    lastLeaderboardFetchTime: 0,
+    cooldownInterval: null
 };
 
 // --- Core Game Logic ---
@@ -191,23 +189,43 @@ async function handleGameSubmission() {
 
 async function refreshLeaderboard(type = 'all') {
     const now = Date.now();
-    const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'all';
 
     // 1. Prevent concurrent requests
     if (gameState.isLeaderboardLoading) return;
 
-    // 2. Throttle active tab refresh (3 seconds)
-    if (type === currentTab && now - gameState.lastLeaderboardFetch[type] < 3000) {
+    // 2. Global Throttle (3 seconds) for all leaderboard interactions
+    const timeSinceLastFetch = now - gameState.lastLeaderboardFetchTime;
+    if (timeSinceLastFetch < 3000) {
+        // Show cooldown feedback
+        ui.setLeaderboardCooldown(true, 3000 - timeSinceLastFetch);
         return;
     }
 
     try {
         gameState.isLeaderboardLoading = true;
         ui.setLeaderboardLoading(true);
+        ui.setLeaderboardCooldown(false); // Clear cooldown visual if any
 
         const data = await api.fetchLeaderboardData(type);
         ui.updateLeaderboardUI(data);
-        gameState.lastLeaderboardFetch[type] = Date.now();
+        gameState.lastLeaderboardFetchTime = Date.now();
+
+        // Start a timer to clear the cooldown visual state after 3s
+        if (gameState.cooldownInterval) clearInterval(gameState.cooldownInterval);
+        ui.setLeaderboardCooldown(true, 3000); // Start showing the cooldown
+
+        let remaining = 3000;
+        gameState.cooldownInterval = setInterval(() => {
+            remaining -= 1000;
+            if (remaining <= 0) {
+                ui.setLeaderboardCooldown(false);
+                clearInterval(gameState.cooldownInterval);
+                gameState.cooldownInterval = null;
+            } else {
+                ui.setLeaderboardCooldown(true, remaining);
+            }
+        }, 1000);
+
     } catch (err) {
         if (err.status === 401 && type === 'my') {
             ui.showModal('로그인 필요', '나의 기록을 보려면 로그인이 필요합니다.', () => {
@@ -216,7 +234,7 @@ async function refreshLeaderboard(type = 'all') {
         }
     } finally {
         gameState.isLeaderboardLoading = false;
-        ui.setLeaderboardLoading(false);
+        // setLeaderboardLoading(false) is implicitly handled by updateLeaderboardUI
     }
 }
 
@@ -239,12 +257,27 @@ function setupEventListeners() {
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const now = Date.now();
+            const timeSinceLastFetch = now - gameState.lastLeaderboardFetchTime;
+
+            // Block TAB SWITCHING during loading OR cooldown
             if (gameState.isLeaderboardLoading) return;
+
+            if (timeSinceLastFetch < 3000) {
+                ui.setLeaderboardCooldown(true, 3000 - timeSinceLastFetch);
+                return;
+            }
 
             const targetTab = btn.dataset.tab;
             const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab;
 
-            // Update UI immediately for active state
+            // Only switch if it's a different tab
+            if (targetTab === currentTab) {
+                refreshLeaderboard(targetTab);
+                return;
+            }
+
+            // Different tab clicked
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 

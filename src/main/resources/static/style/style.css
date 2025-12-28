@@ -578,6 +578,60 @@ body.dark-mode #theme-toggle .icon.moon {
     box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.2);
 }
 
+.tab-btn.cooldown {
+    opacity: 0.6;
+    cursor: not-allowed;
+    position: relative;
+}
+
+/* Loading Spinner */
+.leaderboard-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 0;
+    gap: 1rem;
+    color: var(--primary);
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(var(--primary-rgb), 0.1);
+    border-left-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Cooldown Notification */
+.cooldown-msg {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-color);
+    color: var(--bg-color);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 10;
+}
+
+.tab-btn.cooldown:hover .cooldown-msg {
+    opacity: 1;
+}
+
 /* Modal */
 .modal-overlay {
     position: fixed;
