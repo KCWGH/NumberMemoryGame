@@ -7,6 +7,11 @@ const STATIC_ASSETS = [
     '/index.html',
     '/style/style.css',
     '/js/script.js',
+    '/js/api.js',
+    '/js/ui.js',
+    '/js/audio.js',
+    '/js/utils.js',
+    '/js/constants.js',
     '/manifest.json',
     '/icons/favicon.ico',
     '/icons/icon-192.png',
@@ -35,17 +40,19 @@ self.addEventListener('activate', event => {
     console.log('[SW] Activating service worker version:', CACHE_VERSION);
     event.waitUntil(
         caches.keys().then(cacheNames => {
-            return Promise.all(
-                cacheNames.map(cacheName => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[SW] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
-                    }
-                })
-            );
+            const deletePromises = cacheNames
+                .filter(cacheName => cacheName !== CACHE_NAME)
+                .map(cacheName => {
+                    console.log('[SW] Deleting old cache:', cacheName);
+                    return caches.delete(cacheName);
+                });
+
+            return Promise.all(deletePromises).then(() => {
+                console.log('[SW] All old caches deleted, claiming clients');
+                return self.clients.claim();
+            });
         })
     );
-    return self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {

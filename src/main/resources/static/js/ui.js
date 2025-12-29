@@ -127,7 +127,7 @@ export function updateAuthUI(user, onLogin, onLogout) {
 
         logoutBtn.addEventListener('click', onLogout);
 
-        userInfo.addEventListener('click', () => {
+        userInfoDisplay.addEventListener('click', () => {
             const isMobile = window.innerWidth < BREAKPOINT_MOBILE;
             if (isMobile) {
                 showModal("로그아웃", "로그아웃 하시겠습니까?", onLogout);

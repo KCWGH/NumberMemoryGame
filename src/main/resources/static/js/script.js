@@ -368,6 +368,24 @@ document.addEventListener('DOMContentLoaded', init);
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js').catch(console.error);
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('[App] Service Worker registered successfully:', registration.scope);
+
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('[App] Service Worker update found');
+
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'activated') {
+                            console.log('[App] New Service Worker activated, reloading page');
+                            window.location.reload();
+                        }
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('[App] Service Worker registration failed:', error);
+            });
     });
 }
