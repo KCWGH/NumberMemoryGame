@@ -65,7 +65,6 @@ export function showLoginOptions(onProviderSelect) {
     elements.loginModalContent.style.display = 'block';
     elements.modalOverlay.classList.add('show');
 
-    // Remove old listeners by cloning
     const newContainer = elements.socialLoginContainer.cloneNode(true);
     elements.socialLoginContainer.parentNode.replaceChild(newContainer, elements.socialLoginContainer);
     elements.socialLoginContainer = newContainer;
@@ -108,10 +107,8 @@ export function updateAuthUI(user, onLogin, onLogout) {
         const userInfo = document.getElementById('userInfoDisplay');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // Handle logout button click
         logoutBtn.addEventListener('click', onLogout);
 
-        // Handle username click (Actionable on Mobile)
         userInfo.addEventListener('click', () => {
             const isMobile = window.innerWidth < BREAKPOINT_MOBILE;
             if (isMobile) {
@@ -143,11 +140,9 @@ export function setLeaderboardCooldown(isInCooldown, remainingMs = 3000) {
     tabs.forEach(tab => {
         if (isInCooldown) {
             tab.classList.add('cooldown');
-            // Remove existing message if any
             const existingMsg = tab.querySelector('.cooldown-msg');
             if (existingMsg) existingMsg.remove();
 
-            // Add hover message
             const msg = document.createElement('span');
             msg.classList.add('cooldown-msg');
             msg.innerText = `${remainingSec}초 후에 가능합니다`;
@@ -206,7 +201,6 @@ export function handleResponsive() {
         elements.leaderboardToggleBtn.style.display = 'flex';
     } else {
         elements.leaderboardToggleBtn.style.display = 'none';
-        // Reset styles for PC version
         elements.leaderboardWrapper.style.display = 'flex';
         elements.gameWrapper.style.display = 'flex';
         elements.leaderboardWrapper.classList.add('is-visible');

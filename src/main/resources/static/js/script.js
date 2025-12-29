@@ -21,7 +21,6 @@ let gameState = {
     cooldownInterval: null
 };
 
-// --- Core Game Logic ---
 
 function startStage(stage) {
     clearInterval(gameState.gameInterval);
@@ -40,7 +39,6 @@ function startStage(stage) {
 
     let gridLayout = utils.generateConnectedBlock(numToRemember, availableRows, availableCols);
     if (!gridLayout) {
-        // Fallback grid
         const cols = Math.min(numToRemember, availableCols);
         gridLayout = Array.from({ length: numToRemember }, (_, i) => ({
             row: Math.floor(i / cols),
@@ -77,7 +75,7 @@ function startStage(stage) {
 }
 
 function calculateGridConstraints() {
-    const availableHeight = ui.elements.gameWrapper.clientHeight - 150; // Approximated
+    const availableHeight = ui.elements.gameWrapper.clientHeight - 150;
     const availableWidth = ui.elements.gameWrapper.clientWidth - 40;
     const cellSize = 65;
     return {
@@ -160,7 +158,6 @@ function resetGameState() {
     ui.clearGrid();
 }
 
-// --- Auth & API Interaction ---
 
 async function handleGameSubmission() {
     if (!gameState.isAuthenticated) {
@@ -182,7 +179,7 @@ async function handleGameSubmission() {
     if (result.success) {
         ui.showModal('게임 종료', '점수가 성공적으로 기록되었습니다.', refreshLeaderboard);
     } else {
-        const errorMsg = result.message.includes('cheating') ? '부정행위가 감지되었습니다.' : `오류: ${result.message}`;
+        const errorMsg = utils.getErrorMessage(result.message || { status: result.status });
         ui.showModal('점수 기록 실패', errorMsg, refreshLeaderboard);
     }
 }
@@ -190,13 +187,10 @@ async function handleGameSubmission() {
 async function refreshLeaderboard(type = 'all') {
     const now = Date.now();
 
-    // 1. Prevent concurrent requests
     if (gameState.isLeaderboardLoading) return;
 
-    // 2. Global Throttle (3 seconds) for all leaderboard interactions
     const timeSinceLastFetch = now - gameState.lastLeaderboardFetchTime;
     if (timeSinceLastFetch < 3000) {
-        // Show cooldown feedback
         ui.setLeaderboardCooldown(true, 3000 - timeSinceLastFetch);
         return;
     }
@@ -204,15 +198,14 @@ async function refreshLeaderboard(type = 'all') {
     try {
         gameState.isLeaderboardLoading = true;
         ui.setLeaderboardLoading(true);
-        ui.setLeaderboardCooldown(false); // Clear cooldown visual if any
+        ui.setLeaderboardCooldown(false);
 
         const data = await api.fetchLeaderboardData(type);
         ui.updateLeaderboardUI(data);
         gameState.lastLeaderboardFetchTime = Date.now();
 
-        // Start a timer to clear the cooldown visual state after 3s
         if (gameState.cooldownInterval) clearInterval(gameState.cooldownInterval);
-        ui.setLeaderboardCooldown(true, 3000); // Start showing the cooldown
+        ui.setLeaderboardCooldown(true, 3000);
 
         let remaining = 3000;
         gameState.cooldownInterval = setInterval(() => {
@@ -231,14 +224,14 @@ async function refreshLeaderboard(type = 'all') {
             ui.showModal('로그인 필요', '나의 기록을 보려면 로그인이 필요합니다.', () => {
                 ui.showLoginOptions(provider => window.location.href = SOCIAL_LOGIN_URLS[provider]);
             });
+        } else {
+            ui.showModal('랭킹 불러오기 실패', utils.getErrorMessage(err));
         }
     } finally {
         gameState.isLeaderboardLoading = false;
-        // setLeaderboardLoading(false) is implicitly handled by updateLeaderboardUI
     }
 }
 
-// --- Event Listeners ---
 
 function setupEventListeners() {
     ui.elements.startBtn.addEventListener('click', onStartGame);
@@ -260,7 +253,6 @@ function setupEventListeners() {
             const now = Date.now();
             const timeSinceLastFetch = now - gameState.lastLeaderboardFetchTime;
 
-            // Block TAB SWITCHING during loading OR cooldown
             if (gameState.isLeaderboardLoading) return;
 
             if (timeSinceLastFetch < 3000) {
@@ -271,13 +263,11 @@ function setupEventListeners() {
             const targetTab = btn.dataset.tab;
             const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab;
 
-            // Only switch if it's a different tab
             if (targetTab === currentTab) {
                 refreshLeaderboard(targetTab);
                 return;
             }
 
-            // Different tab clicked
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
@@ -306,7 +296,7 @@ async function onStartGame() {
         ui.elements.startBtn.style.display = 'none';
         startStage(1);
     } catch (err) {
-        ui.showModal('게임 시작 실패', err.message);
+        ui.showModal('게임 시작 실패', utils.getErrorMessage(err));
     } finally {
         ui.elements.startBtn.disabled = false;
         ui.elements.startBtn.innerText = '게임 시작';
@@ -323,7 +313,6 @@ function toggleMobileLeaderboard(forceShow) {
     ui.elements.restartBtn.style.display = isVisible ? 'block' : 'none';
 }
 
-// --- Initialization ---
 
 async function init() {
     setupEventListeners();
@@ -354,7 +343,6 @@ async function init() {
 
 document.addEventListener('DOMContentLoaded', init);
 
-// Service Worker Registration
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js').catch(console.error);

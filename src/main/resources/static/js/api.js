@@ -59,10 +59,13 @@ export async function startGameSession() {
     });
 
     if (!response.ok) {
-        if (response.status === 401) {
-            throw new Error('로그인이 필요하거나 세션이 만료되었습니다.');
+        let errorData;
+        try {
+            errorData = await response.json();
+        } catch (e) {
+            errorData = { message: await response.text() };
         }
-        throw new Error(`서버 응답 오류: ${response.status}`);
+        throw { status: response.status, ...errorData };
     }
     return await response.json();
 }
@@ -80,11 +83,17 @@ export async function submitGameEnd(data) {
 
     if (response.ok) return { success: true };
 
-    const text = await response.text();
+    let errorData;
+    try {
+        errorData = await response.json();
+    } catch (e) {
+        errorData = { message: await response.text() };
+    }
+
     return {
         success: false,
         status: response.status,
-        message: text
+        ...errorData
     };
 }
 
@@ -101,7 +110,13 @@ export async function fetchLeaderboardData(type = 'all') {
     });
 
     if (!response.ok) {
-        throw { status: response.status };
+        let errorData;
+        try {
+            errorData = await response.json();
+        } catch (e) {
+            errorData = {};
+        }
+        throw { status: response.status, ...errorData };
     }
     return await response.json();
 }
