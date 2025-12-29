@@ -94,18 +94,36 @@ export function updateAuthUI(user, onLogin, onLogout) {
         const provider = user.provider ? user.provider.toLowerCase() : 'unknown';
         let iconPath = `/icons/logo_${provider}.svg`;
 
-        elements.userStatusContainer.innerHTML = `
-            <div id="authContainer" class="auth-pill">
-                <span id="userInfoDisplay">
-                    <img src="${iconPath}" alt="${provider}" class="provider-icon"> ${userName}님
-                </span>
-                <span class="auth-divider"></span>
-                <button id="logoutBtn">로그아웃</button>
-            </div>
-        `;
+        const authContainer = document.createElement('div');
+        authContainer.id = 'authContainer';
+        authContainer.className = 'auth-pill';
 
-        const userInfo = document.getElementById('userInfoDisplay');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfoDisplay = document.createElement('span');
+        userInfoDisplay.id = 'userInfoDisplay';
+
+        const providerIcon = document.createElement('img');
+        providerIcon.src = iconPath;
+        providerIcon.alt = provider;
+        providerIcon.className = 'provider-icon';
+
+        const userNameText = document.createTextNode(` ${userName}님`);
+        userInfoDisplay.appendChild(providerIcon);
+        userInfoDisplay.appendChild(userNameText);
+
+        const divider = document.createElement('span');
+        divider.className = 'auth-divider';
+
+        const logoutBtn = document.createElement('button');
+        logoutBtn.id = 'logoutBtn';
+        logoutBtn.textContent = '로그아웃';
+
+        authContainer.appendChild(userInfoDisplay);
+        authContainer.appendChild(divider);
+        authContainer.appendChild(logoutBtn);
+
+
+        elements.userStatusContainer.innerHTML = '';
+        elements.userStatusContainer.appendChild(authContainer);
 
         logoutBtn.addEventListener('click', onLogout);
 
@@ -170,16 +188,35 @@ export function updateLeaderboardUI(data) {
 
         const li = document.createElement('li');
         li.classList.add(`rank-${rank}`);
-        li.innerHTML = `
-            <div class="user-info-wrapper">
-                <span class="rank-number">${rank}</span>
-                ${userName}
-            </div>
-            <div class="score-provider-wrapper">
-                <img src="/icons/logo_${provider}.svg" alt="${provider}" class="leaderboard-provider-icon">
-                <span class="leaderboard-score">${scoreValue} 점</span>
-            </div>
-        `;
+
+        const userInfoWrapper = document.createElement('div');
+        userInfoWrapper.className = 'user-info-wrapper';
+
+        const rankNumber = document.createElement('span');
+        rankNumber.className = 'rank-number';
+        rankNumber.textContent = rank;
+
+        const userNameText = document.createTextNode(` ${userName}`);
+        userInfoWrapper.appendChild(rankNumber);
+        userInfoWrapper.appendChild(userNameText);
+
+        const scoreProviderWrapper = document.createElement('div');
+        scoreProviderWrapper.className = 'score-provider-wrapper';
+
+        const providerIcon = document.createElement('img');
+        providerIcon.src = `/icons/logo_${provider}.svg`;
+        providerIcon.alt = provider;
+        providerIcon.className = 'leaderboard-provider-icon';
+
+        const scoreSpan = document.createElement('span');
+        scoreSpan.className = 'leaderboard-score';
+        scoreSpan.textContent = `${scoreValue} 점`;
+
+        scoreProviderWrapper.appendChild(providerIcon);
+        scoreProviderWrapper.appendChild(scoreSpan);
+
+        li.appendChild(userInfoWrapper);
+        li.appendChild(scoreProviderWrapper);
         ol.appendChild(li);
     });
 }

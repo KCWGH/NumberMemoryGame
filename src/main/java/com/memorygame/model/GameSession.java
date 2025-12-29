@@ -37,6 +37,14 @@ public class GameSession {
     @Column(nullable = false)
     private SessionStatus status;
 
+    @Column(nullable = false)
+    private Integer currentStage = 1;
+
+    @Column(nullable = false)
+    private Integer totalScore = 0;
+
+    private LocalDateTime lastStageCompletedAt;
+
     @PrePersist
     public void prePersist() {
         if (this.id == null) {
@@ -50,6 +58,14 @@ public class GameSession {
     public GameSession(User user) {
         this.user = user;
         this.status = SessionStatus.IN_PROGRESS;
+        this.currentStage = 1;
+        this.totalScore = 0;
+    }
+
+    public void advanceStage(int scoreGained) {
+        this.currentStage++;
+        this.totalScore += scoreGained;
+        this.lastStageCompletedAt = LocalDateTime.now();
     }
 
     public void endSession() {

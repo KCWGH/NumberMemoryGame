@@ -118,7 +118,7 @@ public class SecurityConfig {
                                 throws ServletException, IOException {
                         String requestUri = request.getRequestURI();
 
-                        if (requestUri.startsWith("/api/leaderboard")) {
+                        if (requestUri.startsWith("/api/leaderboard") || requestUri.startsWith("/api/game")) {
                                 String identifier = getIdentifier(request);
 
                                 if (!rateLimiterService.allowRequest(identifier)) {

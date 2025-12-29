@@ -7,6 +7,7 @@ export const SOCIAL_LOGIN_URLS = {
     logout: `${BASE_URL}/api/logout`,
     user: `${BASE_URL}/api/user`,
     gameStart: `${BASE_URL}/api/game/start`,
+    gameStage: `${BASE_URL}/api/game/stage`,
     gameEnd: `${BASE_URL}/api/game/end`,
     leaderboard: `${BASE_URL}/api/leaderboard`
 };

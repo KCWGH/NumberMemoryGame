@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.memorygame.dto.GameEndRequestDto;
 import com.memorygame.dto.GameStartResponseDto;
+import com.memorygame.dto.StageCompleteRequestDto;
 import com.memorygame.exception.InvalidGameSessionException;
 import com.memorygame.exception.InvalidScoreException;
 import com.memorygame.model.GameSession;
@@ -32,6 +33,48 @@ public class GameService {
     }
 
     @Transactional
+    public String completeStage(StageCompleteRequestDto request) {
+        GameSession session = gameSessionRepository.findById(request.getSessionId())
+                .orElseThrow(() -> new InvalidGameSessionException("Invalid session ID"));
+
+        if (session.getStatus() != GameSession.SessionStatus.IN_PROGRESS) {
+            throw new InvalidGameSessionException("Session is not in progress");
+        }
+
+        if (!request.getStage().equals(session.getCurrentStage())) {
+            throw new InvalidScoreException(
+                "Stage mismatch. Expected stage " + session.getCurrentStage() + " but got " + request.getStage());
+        }
+
+        int expectedClicks = request.getStage() + 2;
+        if (!request.getScoreGained().equals(expectedClicks)) {
+            throw new InvalidScoreException(
+                "Invalid score for stage " + request.getStage() + ". Expected " + expectedClicks + " but got " + request.getScoreGained());
+        }
+
+        if (session.getLastStageCompletedAt() != null) {
+            long timeSinceLastStage = Duration.between(session.getLastStageCompletedAt(), java.time.LocalDateTime.now()).toMillis();
+            long minTimeRequired = expectedClicks * MIN_TIME_PER_CLICK_MS;
+            
+            if (timeSinceLastStage < minTimeRequired) {
+                throw new InvalidScoreException("Stage completed too quickly. Possible cheating detected.");
+            }
+        } else {
+            long timeSinceStart = Duration.between(session.getStartTime(), java.time.LocalDateTime.now()).toMillis();
+            long minTimeRequired = expectedClicks * MIN_TIME_PER_CLICK_MS + 2000; // +2s for initial reveal
+            
+            if (timeSinceStart < minTimeRequired) {
+                throw new InvalidScoreException("Stage completed too quickly. Possible cheating detected.");
+            }
+        }
+
+        session.advanceStage(request.getScoreGained());
+        gameSessionRepository.save(session);
+
+        return "Stage " + request.getStage() + " completed. Score: " + session.getTotalScore();
+    }
+
+    @Transactional
     public String endGame(GameEndRequestDto request) {
         GameSession session = gameSessionRepository.findById(request.getSessionId())
                 .orElseThrow(() -> new InvalidGameSessionException("Invalid session ID"));
@@ -42,36 +85,12 @@ public class GameService {
 
         session.endSession();
 
+        int finalScore = session.getTotalScore();
 
-
-        int totalClicks = 0;
-        for (int i = 1; i < request.getStage(); i++) {
-            totalClicks += (i + 2);
-        }
-        totalClicks += request.getClicksInCurrentStage();
-
-        int calculatedScore = totalClicks;
-
-
-        int maxPossibleClicks = 0;
-        for (int i = 1; i <= request.getStage(); i++) {
-            maxPossibleClicks += (i + 2);
+        if (session.getUser() != null && finalScore > 0) {
+            scoreService.saveScore(session.getUser(), finalScore);
         }
 
-        if (calculatedScore > maxPossibleClicks) {
-            throw new InvalidScoreException("Score exceeds maximum possible for stage " + request.getStage());
-        }
-        long durationMs = Duration.between(session.getStartTime(), session.getEndTime()).toMillis();
-        long minDurationMs = totalClicks * MIN_TIME_PER_CLICK_MS;
-
-        if (durationMs < minDurationMs) {
-            throw new InvalidScoreException("Game duration too short. Possible cheating detected.");
-        }
-
-        if (session.getUser() != null) {
-            scoreService.saveScore(session.getUser(), calculatedScore);
-        }
-
-        return "Score recorded: " + calculatedScore;
+        return "Score recorded: " + finalScore;
     }
 }

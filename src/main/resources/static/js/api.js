@@ -70,6 +70,33 @@ export async function startGameSession() {
     return await response.json();
 }
 
+export async function submitStageComplete(data) {
+    const response = await fetch(SOCIAL_LOGIN_URLS.gameStage, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken()
+        },
+        body: JSON.stringify(data),
+        credentials: 'include'
+    });
+
+    if (response.ok) return { success: true };
+
+    let errorData;
+    try {
+        errorData = await response.json();
+    } catch (e) {
+        errorData = { message: await response.text() };
+    }
+
+    return {
+        success: false,
+        status: response.status,
+        ...errorData
+    };
+}
+
 export async function submitGameEnd(data) {
     const response = await fetch(SOCIAL_LOGIN_URLS.gameEnd, {
         method: 'POST',

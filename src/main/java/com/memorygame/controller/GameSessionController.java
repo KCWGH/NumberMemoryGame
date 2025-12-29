@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.memorygame.dto.GameEndRequestDto;
 import com.memorygame.dto.GameStartResponseDto;
+import com.memorygame.dto.StageCompleteRequestDto;
 import com.memorygame.model.User;
 import com.memorygame.service.GameService;
 import com.memorygame.service.UserService;
@@ -32,6 +33,12 @@ public class GameSessionController {
             user = userService.getUserFromOAuth2User(oauth2User);
         }
         return ResponseEntity.ok(gameService.startGame(user));
+    }
+
+    @PostMapping("/stage")
+    public ResponseEntity<?> completeStage(@Valid @RequestBody StageCompleteRequestDto request) {
+        String result = gameService.completeStage(request);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/end")

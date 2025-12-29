@@ -112,12 +112,35 @@ function handleCellClick(cell) {
         if (gameState.nextNumberToClick > (gameState.currentStage + 2)) {
             clearInterval(gameState.gameInterval);
             gameState.isGameActive = false;
-            setTimeout(() => startStage(gameState.currentStage + 1), 800);
+            handleStageCompletion();
         }
     } else {
         cell.classList.add('wrong');
         cell.innerText = num;
         endGame();
+    }
+}
+
+async function handleStageCompletion() {
+    try {
+        const result = await api.submitStageComplete({
+            sessionId: gameState.currentSessionId,
+            stage: gameState.currentStage,
+            scoreGained: gameState.clicksInCurrentStage
+        });
+
+        if (result.success) {
+            setTimeout(() => startStage(gameState.currentStage + 1), 800);
+        } else {
+            ui.showModal('오류', '스테이지 완료 처리 중 오류가 발생했습니다.', () => {
+                endGame();
+            });
+        }
+    } catch (err) {
+        console.error('Stage completion error:', err);
+        ui.showModal('오류', '서버와의 통신에 실패했습니다.', () => {
+            endGame();
+        });
     }
 }
 
