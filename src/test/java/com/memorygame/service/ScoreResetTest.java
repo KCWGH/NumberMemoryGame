@@ -32,6 +32,7 @@ public class ScoreResetTest {
         @Autowired
         private UserRepository userRepository;
 
+        @SuppressWarnings("null")
         @Test
         void testDailyScoreResetLogic() {
                 // Given

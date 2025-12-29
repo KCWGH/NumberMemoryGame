@@ -93,6 +93,7 @@ public class SecurityConfig {
         }
 
         private static class CsrfCookieFilter extends OncePerRequestFilter {
+                @SuppressWarnings("null")
                 @Override
                 protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                 FilterChain filterChain)
@@ -112,6 +113,7 @@ public class SecurityConfig {
                         this.rateLimiterService = rateLimiterService;
                 }
 
+                @SuppressWarnings("null")
                 @Override
                 protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                 FilterChain filterChain)

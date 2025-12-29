@@ -14,8 +14,8 @@ public class GameEndRequestDto {
     private String sessionId;
 
     @Min(value = 1, message = "Stage must be at least 1")
-    private int stage;
+    private Integer stage;
 
     @Min(value = 0, message = "Clicks cannot be negative")
-    private int clicksInCurrentStage;
+    private Integer clicksInCurrentStage;
 }

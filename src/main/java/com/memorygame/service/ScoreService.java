@@ -26,6 +26,7 @@ public class ScoreService {
 
     private final ScoreRepository scoreRepository;
 
+    @SuppressWarnings("null")
     @Transactional
     public void saveScore(User user, int scoreValue) {
         if (user != null && scoreValue > 0) {
@@ -66,6 +67,7 @@ public class ScoreService {
                 .toList();
     }
 
+    @SuppressWarnings("null")
     @Transactional
     @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Seoul")
     public void deleteOldScores() {

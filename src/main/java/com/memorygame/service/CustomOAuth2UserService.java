@@ -46,6 +46,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                                 attributes.getNameAttributeKey());
         }
 
+        @SuppressWarnings("null")
         private User saveOrUpdate(OAuthAttributes attributes) {
                 User user = userRepository
                                 .findByProviderAndProviderId(attributes.getProviderType(), attributes.getProviderId())

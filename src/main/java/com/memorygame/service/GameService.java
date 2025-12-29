@@ -32,6 +32,7 @@ public class GameService {
         return new GameStartResponseDto(session.getId());
     }
 
+    @SuppressWarnings("null")
     @Transactional
     public String completeStage(StageCompleteRequestDto request) {
         GameSession session = gameSessionRepository.findById(request.getSessionId())
@@ -43,26 +44,28 @@ public class GameService {
 
         if (!request.getStage().equals(session.getCurrentStage())) {
             throw new InvalidScoreException(
-                "Stage mismatch. Expected stage " + session.getCurrentStage() + " but got " + request.getStage());
+                    "Stage mismatch. Expected stage " + session.getCurrentStage() + " but got " + request.getStage());
         }
 
         int expectedClicks = request.getStage() + 2;
         if (!request.getScoreGained().equals(expectedClicks)) {
             throw new InvalidScoreException(
-                "Invalid score for stage " + request.getStage() + ". Expected " + expectedClicks + " but got " + request.getScoreGained());
+                    "Invalid score for stage " + request.getStage() + ". Expected " + expectedClicks + " but got "
+                            + request.getScoreGained());
         }
 
         if (session.getLastStageCompletedAt() != null) {
-            long timeSinceLastStage = Duration.between(session.getLastStageCompletedAt(), java.time.LocalDateTime.now()).toMillis();
+            long timeSinceLastStage = Duration.between(session.getLastStageCompletedAt(), java.time.LocalDateTime.now())
+                    .toMillis();
             long minTimeRequired = expectedClicks * MIN_TIME_PER_CLICK_MS;
-            
+
             if (timeSinceLastStage < minTimeRequired) {
                 throw new InvalidScoreException("Stage completed too quickly. Possible cheating detected.");
             }
         } else {
             long timeSinceStart = Duration.between(session.getStartTime(), java.time.LocalDateTime.now()).toMillis();
             long minTimeRequired = expectedClicks * MIN_TIME_PER_CLICK_MS + 2000; // +2s for initial reveal
-            
+
             if (timeSinceStart < minTimeRequired) {
                 throw new InvalidScoreException("Stage completed too quickly. Possible cheating detected.");
             }
@@ -74,6 +77,7 @@ public class GameService {
         return "Stage " + request.getStage() + " completed. Score: " + session.getTotalScore();
     }
 
+    @SuppressWarnings("null")
     @Transactional
     public String endGame(GameEndRequestDto request) {
         GameSession session = gameSessionRepository.findById(request.getSessionId())
@@ -83,9 +87,19 @@ public class GameService {
             throw new InvalidGameSessionException("Session is not in progress");
         }
 
+        if (!request.getStage().equals(session.getCurrentStage())) {
+            throw new InvalidScoreException(
+                    "Stage mismatch. Expected stage " + session.getCurrentStage() + " but got " + request.getStage());
+        }
+
+        int maxPossibleClicks = session.getCurrentStage() + 2;
+        if (request.getClicksInCurrentStage() < 0 || request.getClicksInCurrentStage() >= maxPossibleClicks) {
+            throw new InvalidScoreException("Invalid clicks in current stage");
+        }
+
         session.endSession();
 
-        int finalScore = session.getTotalScore();
+        int finalScore = session.getTotalScore() + request.getClicksInCurrentStage();
 
         if (session.getUser() != null && finalScore > 0) {
             scoreService.saveScore(session.getUser(), finalScore);
