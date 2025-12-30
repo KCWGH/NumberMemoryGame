@@ -64,22 +64,22 @@ export function getErrorMessage(error) {
     const code = error.code;
     const message = error.message || (typeof error === 'string' ? error : '');
 
-    if (code === 'INVALID_SESSION') return '세션이 만료되었거나 유효하지 않습니다. 다시 로그인해 주세요.';
+    if (code === 'INVALID_SESSION') return '세션이 만료되었거나 유효하지 않습니다.\n다시 로그인해 주세요.';
     if (code === 'INVALID_SCORE') {
-        if (message.includes('cheating')) return '부정행위가 감지되었습니다. 정상적인 플레이를 부탁드립니다.';
+        if (message.includes('cheating')) return '부정행위가 감지되었습니다.\n정상적인 플레이를 부탁드립니다.';
         return '유효하지 않은 점수 기록 요청입니다.';
     }
     if (code === 'DUPLICATE_SCORE') return '동일한 점수가 오늘 이미 기록되어 있습니다.';
     if (code === 'USER_NOT_FOUND') return '사용자 정보를 찾을 수 없습니다.';
-    if (code === 'TOO_MANY_REQUESTS') return '너무 많은 요청이 발생했습니다. 잠시 후 다시 시도해 주세요.';
+    if (code === 'TOO_MANY_REQUESTS') return '너무 많은 요청이 발생했습니다.\n잠시 후 다시 시도해 주세요.';
 
     if (status === 401) return '로그인이 필요하거나 세션이 만료되었습니다.';
     if (status === 403) return '요청하신 작업을 수행할 권한이 없습니다.';
     if (status === 404) return '요청하신 정보를 찾을 수 없습니다.';
-    if (status >= 500) return '서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+    if (status >= 500) return '서버 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.';
 
     if (message.includes('Failed to fetch') || message.includes('NetworkError')) {
-        return '서버에 연결할 수 없습니다. 네트워크 상태를 확인해 주세요.';
+        return '서버에 연결할 수 없습니다.\n네트워크 상태를 확인해 주세요.';
     }
 
     return message || '요청 처리 중 오류가 발생했습니다.';
