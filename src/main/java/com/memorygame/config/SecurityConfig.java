@@ -21,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.memorygame.service.CustomOAuth2UserService;
 import com.memorygame.service.RateLimiterService;
-import com.memorygame.exception.RateLimitExceededException;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -124,7 +123,10 @@ public class SecurityConfig {
                                 String identifier = getIdentifier(request);
 
                                 if (!rateLimiterService.allowRequest(identifier)) {
-                                        throw new RateLimitExceededException("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+                                        response.setStatus(429);
+                                        response.setContentType("application/json;charset=UTF-8");
+                                        response.getWriter().write("{\"message\":\"요청이 너무 많습니다. 잠시 후 다시 시도해주세요.\",\"code\":\"TOO_MANY_REQUESTS\"}");
+                                        return;
                                 }
                         }
 

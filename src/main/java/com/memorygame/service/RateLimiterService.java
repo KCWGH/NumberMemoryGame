@@ -28,6 +28,7 @@ public class RateLimiterService {
         return true;
     }
 
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 3600000)
     public void cleanupOldEntries() {
         long currentTime = System.currentTimeMillis();
         requestTimestamps.entrySet().removeIf(entry -> {

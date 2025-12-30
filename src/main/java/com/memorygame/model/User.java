@@ -48,14 +48,13 @@ public class User {
     private List<Score> scores;
 
     @Builder
-    public User(ProviderType provider, String providerId, String name, String email) { // 🌟 Builder에 provider 추가
+    public User(ProviderType provider, String providerId, String name, String email) {
         this.provider = provider;
         this.providerId = providerId;
         this.name = name;
         this.email = email;
     }
 
-    // OAuth2 로그인 시 정보 업데이트
     public User update(String name, String email) {
         this.name = name;
         this.email = email;
